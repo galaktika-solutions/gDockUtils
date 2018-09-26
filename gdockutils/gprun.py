@@ -66,6 +66,47 @@ def get_userspec(spec):
     return uid, username, homedir, gid, groups
 
 
+def gprun(userspec=None, stopsignal=None, command=[]):
+    uid, username, homedir, gid, groups = get_userspec(userspec)
+
+    def preexec():
+        if groups is not None:
+            os.setgroups(groups)
+        if gid:
+            os.setgid(gid)
+        if uid:
+            os.setuid(uid)
+
+    env = os.environ.copy()
+    if username is not None:
+        env['USER'] = username
+    if homedir is not None:
+        env['HOME'] = homedir
+    if uid is not None:
+        env['UID'] = str(uid)
+
+    if stopsignal is not None:
+        try:
+            sig = getattr(signal, stopsignal)
+        except AttributeError:
+            raise Exception('bad signal: %r' % stopsignal)
+    else:
+        sig = None
+
+    proc = subprocess.Popen(
+        command, preexec_fn=preexec, env=env,
+        start_new_session=True
+    )
+
+    def handler(signum, frame):
+        proc.send_signal(sig if sig is not None else signum)
+
+    signal.signal(signal.SIGTERM, handler)
+    signal.signal(signal.SIGINT, handler)
+
+    sys.exit(proc.wait())
+
+
 def main():
     parser = argparse.ArgumentParser(
         description=(
@@ -95,41 +136,12 @@ def main():
     if not args.command:
         parser.error('No command given')
 
-    uid, username, homedir, gid, groups = get_userspec(args.userspec)
-
-    def preexec():
-        if groups is not None:
-            os.setgroups(groups)
-        if gid:
-            os.setgid(gid)
-        if uid:
-            os.setuid(uid)
-
-    env = os.environ.copy()
-    if username is not None:
-        env['USER'] = username
-    if homedir is not None:
-        env['HOME'] = homedir
-    if uid is not None:
-        env['UID'] = str(uid)
-
-    if args.stopsignal is not None:
-        try:
-            sig = getattr(signal, args.stopsignal)
-        except AttributeError:
-            raise Exception('bad signal: %r' % args.stopsignal)
-    else:
-        sig = None
-
-    proc = subprocess.Popen(
-        args.command, preexec_fn=preexec, env=env,
-        start_new_session=True
+    gprun(
+        userspec=args.userspec,
+        stopsignal=args.stopsignal,
+        command=args.command
     )
 
-    def handler(signum, frame):
-        proc.send_signal(sig if sig is not None else signum)
 
-    signal.signal(signal.SIGTERM, handler)
-    signal.signal(signal.SIGINT, handler)
-
-    sys.exit(proc.wait())
+if __name__ == '__main__':
+    gprun('1000:1000', command=['id'])
