@@ -1,20 +1,16 @@
-FROM ubuntu:bionic-20180821
+FROM alpine:3.8
 
-ENV DEBIAN_FRONTEND noninteractive
-
-# locales
-RUN apt-get update
-RUN apt-get install -y locales build-essential rsync gettext
-RUN localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
-ENV LANG en_US.utf8
+RUN apk --update add python3 bash
 
 # python
-RUN apt-get install -y python3.6 python3-venv
-RUN python3.6 -m venv /python
+RUN python3 -m venv /python
 ENV PATH /python/bin:$PATH
 ENV PYTHONUNBUFFERED 1
+RUN pip3 install --no-cache twine==1.11.0
+RUN pip3 install --no-cache coverage==4.5.1
+RUN pip3 install --no-cache Sphinx==1.7.5
+RUN pip3 install --no-cache sphinx_rtd_theme==0.4.0
 
-# COPY / /src
-# RUN pip install -e /src
+RUN apk --update add su-exec
 
 ENTRYPOINT ["/src/entrypoint.sh"]

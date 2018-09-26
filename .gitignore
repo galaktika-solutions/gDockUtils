@@ -1,2 +1,6 @@
-gdockutils.egg-info
 __pycache__
+*.egg-info
+dist
+.coverage
+htmlcov
+docs/build
