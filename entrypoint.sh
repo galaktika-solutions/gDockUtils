@@ -14,6 +14,7 @@ elif [ "$1" = 'docs' ]; then
   su-exec "$(stat -c %u:%g .)" sphinx-build -b html docs/source docs/build
   exit
 elif [ "$1" = 'sdist' ]; then
+  rm -rf dist/
   python setup.py sdist
   exit
 fi

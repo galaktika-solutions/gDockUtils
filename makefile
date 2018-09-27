@@ -17,8 +17,7 @@ docs:
 	docker-compose run --rm python docs
 
 distribute: build install test docs
-	@-rm dist/*
 	docker-compose run --rm python sdist
-	@docker-compose run --rm python twine upload dist/*
-	@git tag $(version)
-	@git push --tags
+	docker-compose run --rm python twine upload dist/*
+	git tag $(version)
+	git push --tags
