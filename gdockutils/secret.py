@@ -142,7 +142,7 @@ def createsecret(
 def readsecret(
     secret, database=None, store=None, decode=False
 ):
-    db_file = get_param(database, 'SECRET_FILE', '/project/.secret.env')
+    db_file = get_param(database, 'SECRET_FILE', '/.secret.env')
 
     try:
         with open(db_file, 'r') as db:
