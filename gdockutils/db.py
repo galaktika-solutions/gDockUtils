@@ -132,7 +132,9 @@ def backup(
             filename += '.sql'
         filename = os.path.join(backup_dir, filename)
 
-        run(['pg_dump', '-v', '-F', database_format, '-f', filename, connstr])
+        cmd = ['pg_dump', '-v', '-F', database_format, '-f', filename, connstr]
+        printerr(' '.join(cmd))
+        run(cmd)
 
     if files:
         run([
