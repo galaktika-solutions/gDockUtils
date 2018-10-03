@@ -141,7 +141,3 @@ def main():
         stopsignal=args.stopsignal,
         command=args.command
     )
-
-
-if __name__ == '__main__':
-    gprun('1000:1000', command=['id'])

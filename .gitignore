@@ -4,3 +4,5 @@ dist
 .coverage
 htmlcov
 docs/build
+/pyenv
+/.secret.env

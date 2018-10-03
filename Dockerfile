@@ -13,4 +13,6 @@ RUN pip3 install --no-cache sphinx_rtd_theme==0.4.0
 
 RUN apk --update add su-exec
 
+RUN addgroup -g 1000 developer && adduser -D -H -u 1000 -G developer developer
+
 ENTRYPOINT ["/src/entrypoint.sh"]

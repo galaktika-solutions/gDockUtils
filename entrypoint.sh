@@ -17,6 +17,10 @@ elif [ "$1" = 'sdist' ]; then
   rm -rf dist/
   python setup.py sdist
   exit
+elif [ "$1" = 'bash' ]; then
+  pip install -e /src &> /dev/null
+  bash
+  exit
 fi
 
 exec "$@"

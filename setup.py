@@ -27,7 +27,10 @@ setup(
     entry_points={
         'console_scripts': [
             'gprun=gdockutils.gprun:main',
-            'ask=gdockutils.ask:main'
+            'ask=gdockutils.ask:main',
+            'createsecret=gdockutils.secret:createsecret_main',
+            'readsecret=gdockutils.secret:readsecret_main',
+            'backup=gdockutils.db:backup_main'
         ],
     }
 )

@@ -1,1 +1,5 @@
 .git
+pyenv
+dist
+htmlcov
+/.secret.env

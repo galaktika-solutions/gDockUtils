@@ -1,11 +1,8 @@
 #!/usr/bin/env python3
 
 import argparse
-import sys
 
-
-def printerr(s, end='\n'):
-    print(s, file=sys.stderr, end=end)
+from . import printerr
 
 
 def main():

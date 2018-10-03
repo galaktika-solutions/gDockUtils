@@ -21,3 +21,6 @@ distribute: build install test docs
 	docker-compose run --rm python twine upload dist/*
 	git tag $(version)
 	git push --tags
+
+bash:
+	docker-compose run --rm python bash
