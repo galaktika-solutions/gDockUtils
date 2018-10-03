@@ -86,25 +86,57 @@ def backup_main():
         '--connstr',
         help='database connection string (env: CONNSTR)',
     )
+    parser.add_argument(
+        '--files_source',
+        help='the directory to backup during files backup',
+    )
+    parser.add_argument(
+        '--backup_dir',
+        help='the base backup directory',
+    )
+    parser.add_argument(
+        '--backup_uid',
+        help='the uid of the backup user',
+    )
+    parser.add_argument(
+        '--backup_gid',
+        help='the gid of the backup user',
+    )
     args = parser.parse_args()
 
-    backup(args.database_format, args.files, args.hostname, args.connstr)
+    backup(
+        args.database_format, args.files, args.hostname, args.connstr,
+        args.files_source, args.backup_dir, args.backup_uid, args.backup_gid
+    )
 
 
-def backup(database_format=None, files=None, hostname=None, connstr=None):
+def backup(
+    database_format=None, files=None, hostname=None, connstr=None,
+    files_source=None, backup_dir=None, backup_uid=None, backup_gid=None
+):
+    hostname = get_param(hostname, 'HOST_NAME', 'localhost')
     connstr = get_param(connstr, 'CONNSTR', '')
-    set_backup_perms()
+    files_source = get_param(files_source, 'FILES_SOURCE', '/data/files/')
+    backup_dir = get_param(backup_dir, 'BACKUP_DIR', '/backup')
+    backup_uid = get_param(backup_uid, 'BACKUP_UID', None)
+    backup_gid = get_param(backup_gid, 'BACKUP_GID', None)
+
+    set_backup_perms(backup_dir, backup_uid, backup_gid)
     wait_for_db(connstr)
 
     if database_format:
         timestamp = time.strftime('%Y-%m-%d-%H-%M-%S', time.gmtime())
-        hostname = get_param(hostname, 'HOST_NAME', 'localhost')
         filename = '{hostname}-db-{timestamp}.backup'
         filename = filename.format(hostname=hostname, timestamp=timestamp)
         if database_format == 'plain':
             filename += '.sql'
 
         run(['pg_dump', '-v', '-F', database_format, '-f', filename, connstr])
-        # host=postgres user=django dbname=mv2
-        # sslmode=require sslcert=/root/postgresql.crt
-        # sslkey=/root/postgresql.key password='escapedstuff'
+
+    if files:
+        run([
+            'rsync', '-v', '-a', '--delete', '--stats',
+            files_source, os.path.join(backup_dir, 'files/')
+        ])
+
+    set_backup_perms(backup_dir, backup_uid, backup_gid)

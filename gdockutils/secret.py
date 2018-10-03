@@ -105,6 +105,7 @@ def createsecret(
         secret, database=None, fromfile=None,
         random=None, value=None, force=None,
 ):
+    # Creating secrets is mostly done by mounting the project folder
     db_file = get_param(database, 'SECRET_FILE', '/project/.secret.env')
 
     try:
@@ -142,6 +143,7 @@ def createsecret(
 def readsecret(
     secret, database=None, store=None, decode=False
 ):
+    # Reading secrets is mostly done by "production" containers
     db_file = get_param(database, 'SECRET_FILE', '/.secret.env')
 
     try:
