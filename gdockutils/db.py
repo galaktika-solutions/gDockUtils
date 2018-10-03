@@ -130,6 +130,7 @@ def backup(
         filename = filename.format(hostname=hostname, timestamp=timestamp)
         if database_format == 'plain':
             filename += '.sql'
+        filename = os.path.join(backup_dir, filename)
 
         run(['pg_dump', '-v', '-F', database_format, '-f', filename, connstr])
 
