@@ -4,33 +4,10 @@ import argparse
 from . import get_param, uid, gid
 from . import printerr, run
 import os
-# import sys
 import time
-# from .secret import readsecret
 
 
-def escape_pwd(pwd):
-    pwd = pwd.replace("\\", "\\\\").replace("'", "\\'")
-    return "'%s'" % pwd
-
-
-def conninfo(**kwargs):
-    params = (
-        'host', 'port', 'user', 'password', 'dbname', 'sslmode', 'sslcert',
-        'sslkey', 'sslrootcert'
-    )
-    ci = dict([(p, kwargs.pop(p, '')) for p in params])
-    if ci['password']:
-        ci['password'] = escape_pwd(ci['password'])
-    return ' '.join(['%s=%s' % (k, v) for k, v in ci.items() if v])
-
-
-def set_backup_perms(backup_dir=None, backup_uid=None, backup_gid=None):
-    default_uid = os.stat('.').st_uid
-    backup_dir = get_param(backup_dir, 'BACKUP_DIR', '/backup')
-    backup_uid = uid(get_param(backup_uid, 'BACKUP_UID', default_uid))
-    backup_gid = gid(get_param(backup_gid, 'BACKUP_GID', backup_uid))
-
+def set_backup_perms(backup_dir, backup_uid, backup_gid):
     os.makedirs(os.path.join(backup_dir, 'db'), exist_ok=True)
     os.makedirs(os.path.join(backup_dir, 'files'), exist_ok=True)
 
@@ -44,12 +21,10 @@ def set_backup_perms(backup_dir=None, backup_uid=None, backup_gid=None):
     os.chmod(backup_dir, 0o755)
 
 
-def wait_for_db(connstr=None):
-    connstr = get_param(connstr, 'CONNSTR', '')
-    sql = 'select 1'
+def wait_for_db():
     while True:
         try:
-            run(['psql', connstr, '-c', sql])
+            run(['psql', '-c', 'select 1'])
         except Exception:
             printerr('db not ready yet')
             time.sleep(1)
@@ -83,10 +58,6 @@ def backup_main():
         )
     )
     parser.add_argument(
-        '--connstr',
-        help='database connection string (env: CONNSTR)',
-    )
-    parser.add_argument(
         '--files_source',
         help='the directory to backup during files backup',
     )
@@ -105,24 +76,24 @@ def backup_main():
     args = parser.parse_args()
 
     backup(
-        args.database_format, args.files, args.hostname, args.connstr,
+        args.database_format, args.files, args.hostname,
         args.files_source, args.backup_dir, args.backup_uid, args.backup_gid
     )
 
 
 def backup(
-    database_format=None, files=None, hostname=None, connstr=None,
+    database_format=None, files=None, hostname=None,
     files_source=None, backup_dir=None, backup_uid=None, backup_gid=None
 ):
     hostname = get_param(hostname, 'HOST_NAME', 'localhost')
-    connstr = get_param(connstr, 'CONNSTR', '')
     files_source = get_param(files_source, 'FILES_SOURCE', '/data/files/')
+    default_uid = os.stat('.').st_uid
     backup_dir = get_param(backup_dir, 'BACKUP_DIR', '/backup')
-    backup_uid = get_param(backup_uid, 'BACKUP_UID', None)
-    backup_gid = get_param(backup_gid, 'BACKUP_GID', None)
+    backup_uid = uid(get_param(backup_uid, 'BACKUP_UID', default_uid))
+    backup_gid = gid(get_param(backup_gid, 'BACKUP_GID', backup_uid))
 
     set_backup_perms(backup_dir, backup_uid, backup_gid)
-    wait_for_db(connstr)
+    wait_for_db()
 
     if database_format:
         timestamp = time.strftime('%Y-%m-%d-%H-%M-%S', time.gmtime())
@@ -132,7 +103,7 @@ def backup(
             filename += '.sql'
         filename = os.path.join(backup_dir, 'db', filename)
 
-        cmd = ['pg_dump', '-v', '-F', database_format, '-f', filename, connstr]
+        cmd = ['pg_dump', '-v', '-F', database_format, '-f', filename]
         printerr(' '.join(cmd))
         run(cmd)
 
