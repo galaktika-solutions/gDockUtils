@@ -115,10 +115,6 @@ def restore_main():
         )
     )
     parser.add_argument(
-        '--files_source',
-        help='the directory to backup during files backup',
-    )
-    parser.add_argument(
         '--backup_dir',
         help='the base backup directory',
     )
