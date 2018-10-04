@@ -30,7 +30,8 @@ setup(
             'ask=gdockutils.ask:main',
             'createsecret=gdockutils.secret:createsecret_main',
             'readsecret=gdockutils.secret:readsecret_main',
-            'backup=gdockutils.db:backup_main'
+            'backup=gdockutils.db:backup_main',
+            'restore=gdockutils.db:restore_main'
         ],
     }
 )

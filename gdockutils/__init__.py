@@ -9,8 +9,14 @@ def printerr(s, end='\n'):
     print(s, file=sys.stderr, end=end)
 
 
-def run(cmd):
-    subprocess.run(cmd, check=True)
+def run(cmd, silent=False, log_command=False):
+    if log_command:
+        printerr(' '.join(cmd))
+    subprocess.run(
+        cmd, check=True,
+        stdout=subprocess.PIPE if silent else None,
+        stderr=subprocess.PIPE if silent else None
+    )
 
 
 def get_param(var, env_var, default):
