@@ -100,8 +100,7 @@ def restore_main():
     )
     parser.add_argument(
         '-f', '--db_backup_file',
-        help='the database backup filename (not the path)',
-        choices=['custom', 'plain']
+        help='the database backup filename (not the path)'
     )
     parser.add_argument(
         '--files',
