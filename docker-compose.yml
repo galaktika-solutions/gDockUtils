@@ -7,4 +7,5 @@ services:
         dockerfile: Dockerfile
     volumes:
       - ".:/src"
+      - "./.secret.env:/.secret.env:ro"
     working_dir: /src

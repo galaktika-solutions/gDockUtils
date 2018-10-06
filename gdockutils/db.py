@@ -7,29 +7,36 @@ import os
 import time
 
 
-def set_backup_perms(backup_dir, backup_uid, backup_gid):
-    os.makedirs(os.path.join(backup_dir, 'db'), exist_ok=True)
-    os.makedirs(os.path.join(backup_dir, 'files'), exist_ok=True)
+# assumptions on the project structure
+BACKUP_DIR = '/backup'
+DATA_FILES_DIR = '/data/files'
+BACKUP_FILE_PREFIX = os.environ.get('HOST_NAME', 'localhost')
 
-    for root, dirs, files in os.walk(backup_dir):
+
+def set_backup_perms(backup_uid, backup_gid):
+    os.makedirs(os.path.join(BACKUP_DIR, 'db'), exist_ok=True)
+    os.makedirs(os.path.join(BACKUP_DIR, 'files'), exist_ok=True)
+
+    for root, dirs, files in os.walk(BACKUP_DIR):
         os.chown(root, backup_uid, backup_gid)
         os.chmod(root, 0o700)
         for f in files:
             path = os.path.join(root, f)
             os.chown(path, backup_uid, backup_gid)
             os.chmod(path, 0o600)
-    os.chmod(backup_dir, 0o755)
+    os.chmod(BACKUP_DIR, 0o755)
 
 
-def set_files_perms(files_source):
+def set_files_perms():
     u, g = uid('django'), gid('nginx')
-    for root, dirs, files in os.walk(files_source):
+    for root, dirs, files in os.walk(DATA_FILES_DIR):
         os.chown(root, u, g)
         os.chmod(root, 0o2750)
         for f in files:
             path = os.path.join(root, f)
             os.chown(path, u, g)
             os.chmod(path, 0o640)
+    os.chown('/data/latex', u, u)
 
 
 def wait_for_db():
@@ -52,29 +59,14 @@ def backup_main():
     )
     parser.add_argument(
         '-d', '--database_format',
-        help='Creates a database backup to /backup/db using the given format'
-             ' (custom or plain).',
+        help='Creates a database backup to BACKUP_DIR/db using the given '
+             'format (custom or plain).',
         choices=['custom', 'plain']
     )
     parser.add_argument(
         '-f', '--files',
-        help='backs up files from /data/files/ to /backup/files',
+        help='backs up files from /data/files/ to BACKUP_DIR/files',
         action='store_true'
-    )
-    parser.add_argument(
-        '--hostname',
-        help=(
-            'db backup file names are prefixed with this name '
-            '(env: HOST_NAME)'
-        )
-    )
-    parser.add_argument(
-        '--files_source',
-        help='the directory to backup during files backup',
-    )
-    parser.add_argument(
-        '--backup_dir',
-        help='the base backup directory',
     )
     parser.add_argument(
         '--backup_uid',
@@ -87,8 +79,8 @@ def backup_main():
     args = parser.parse_args()
 
     backup(
-        args.database_format, args.files, args.hostname,
-        args.files_source, args.backup_dir, args.backup_uid, args.backup_gid
+        args.database_format, args.files,
+        args.backup_uid, args.backup_gid
     )
 
 
@@ -108,16 +100,6 @@ def restore_main():
         action='store_true'
     )
     parser.add_argument(
-        '--files_source',
-        help=(
-            'The directory inside the container to restore files to'
-        )
-    )
-    parser.add_argument(
-        '--backup_dir',
-        help='the base backup directory',
-    )
-    parser.add_argument(
         '--drop_db',
         help='the database to drop',
     )
@@ -132,19 +114,16 @@ def restore_main():
     args = parser.parse_args()
 
     restore(
-        args.db_backup_file, args.files, args.files_source,
-        args.backup_dir, args.drop_db, args.create_db, args.owner
+        args.db_backup_file, args.files,
+        args.drop_db, args.create_db, args.owner
     )
 
 
 def backup(
-    database_format=None, files=None, hostname=None,
-    files_source=None, backup_dir=None, backup_uid=None, backup_gid=None
+    database_format=None, files=None,
+    backup_uid=None, backup_gid=None
 ):
-    hostname = get_param(hostname, 'HOST_NAME', 'localhost')
-    files_source = get_param(files_source, 'FILES_SOURCE', '/data/files/')
     default_uid = os.stat('.').st_uid
-    backup_dir = get_param(backup_dir, 'BACKUP_DIR', '/backup')
     backup_uid = uid(get_param(backup_uid, 'BACKUP_UID', default_uid))
     backup_gid = gid(get_param(backup_gid, 'BACKUP_GID', backup_uid))
 
@@ -152,11 +131,13 @@ def backup(
 
     if database_format:
         timestamp = time.strftime('%Y-%m-%d-%H-%M-%S', time.gmtime())
-        filename = '{hostname}-db-{timestamp}.backup'
-        filename = filename.format(hostname=hostname, timestamp=timestamp)
+        filename = '{prefix}-db-{timestamp}.backup'
+        filename = filename.format(
+            prefix=BACKUP_FILE_PREFIX, timestamp=timestamp
+        )
         if database_format == 'plain':
             filename += '.sql'
-        filename = os.path.join(backup_dir, 'db', filename)
+        filename = os.path.join(BACKUP_DIR, 'db', filename)
 
         cmd = ['pg_dump', '-v', '-F', database_format, '-f', filename]
         run(cmd, log_command=True)
@@ -164,22 +145,19 @@ def backup(
     if files:
         cmd = [
             'rsync', '-v', '-a', '--delete', '--stats',
-            files_source, os.path.join(backup_dir, 'files/')
+            DATA_FILES_DIR, os.path.join(BACKUP_DIR, 'files/')
         ]
         run(cmd, log_command=True)
 
-    set_backup_perms(backup_dir, backup_uid, backup_gid)
+    set_backup_perms(backup_uid, backup_gid)
 
 
 def restore(
-    db_backup_file=None, files=None, files_source=None, backup_dir=None,
+    db_backup_file=None, files=None,
     drop_db=None, create_db=None, owner=None
 ):
-    backup_dir = get_param(backup_dir, 'BACKUP_DIR', '/backup')
-    files_source = get_param(files_source, 'FILES_SOURCE', '/data/files/')
-
     if db_backup_file:
-        db_backup_file = os.path.join(backup_dir, 'db', db_backup_file)
+        db_backup_file = os.path.join(BACKUP_DIR, 'db', db_backup_file)
         if db_backup_file.endswith('.backup'):
             # -h postgres -U postgres -d postgres
             cmd = [
@@ -204,7 +182,7 @@ def restore(
     if files:
         cmd = [
             'rsync', '-v', '-a', '--delete', '--stats',
-            os.path.join(backup_dir, 'files/'), files_source
+            os.path.join(BACKUP_DIR, 'files/'), DATA_FILES_DIR
         ]
         run(cmd, log_command=True)
-        set_files_perms(files_source)
+        set_files_perms()

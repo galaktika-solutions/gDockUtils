@@ -24,6 +24,9 @@ setup(
     ],
     license='MIT',
     packages=['gdockutils'],
+    install_requires=[
+        'pyyaml >= 3.13',
+    ],
     entry_points={
         'console_scripts': [
             'gprun=gdockutils.gprun:main',
@@ -31,7 +34,8 @@ setup(
             'createsecret=gdockutils.secret:createsecret_main',
             'readsecret=gdockutils.secret:readsecret_main',
             'backup=gdockutils.db:backup_main',
-            'restore=gdockutils.db:restore_main'
+            'restore=gdockutils.db:restore_main',
+            'prepare_django=gdockutils.prepare:prepare_django_main'
         ],
     }
 )

@@ -61,7 +61,3 @@ def ask(options=[], prompt='', default=None):
             return options[int(i)]
         except Exception:
             continue
-
-
-if __name__ == '__main__':
-    ask()
