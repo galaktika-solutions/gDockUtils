@@ -1,6 +1,6 @@
 FROM alpine:3.8
 
-RUN apk --update add python3 bash
+RUN apk --update add python3 bash rsync
 
 RUN addgroup -g 1000 dev && adduser -D -u 1000 -G dev dev
 USER 1000:1000

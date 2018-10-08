@@ -32,10 +32,14 @@ setup(
             'gprun=gdockutils.gprun:gprun_cli',
             'ask=gdockutils.ui:ask_cli',
             'createsecret=gdockutils.secret:createsecret_cli',
+            'createsecret_ui=gdockutils.ui:createsecret_ui',
             'readsecret=gdockutils.secret:readsecret_cli',
-            'backup=gdockutils.db:backup_main',
-            'restore=gdockutils.db:restore_main',
-            'prepare_django=gdockutils.prepare:prepare_django_main'
+            'readsecret_ui=gdockutils.ui:readsecret_ui',
+            'backup=gdockutils.db:backup_cli',
+            'backup_ui=gdockutils.ui:backup_ui',
+            'restore=gdockutils.db:restore_cli',
+            'restore_ui=gdockutils.ui:restore_ui',
+            'prepare=gdockutils.prepare:prepare_cli'
         ],
     }
 )

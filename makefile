@@ -1,3 +1,4 @@
+SHELL=/bin/bash
 version := $(shell sed -rn "s/^VERSION = '(.*)'$$/\1/p" setup.py)
 
 version:
@@ -7,17 +8,24 @@ build:
 	docker-compose build
 
 test:
-	docker-compose run --rm python test
-#
-# .PHONY: docs
-# docs:
-# 	docker-compose run --rm python docs
-#
-# distribute: build install test docs
-# 	docker-compose run --rm python sdist
-# 	docker-compose run --rm python twine upload dist/*
-# 	git tag $(version)
-# 	git push --tags
+	docker-compose run --rm python bash -c "\
+		coverage run --source gdockutils -m unittest && \
+		coverage report && \
+		coverage html \
+	"
+
+.PHONY: docs
+docs:
+	docker-compose run --rm python sphinx-build -b html docs/source docs/build
+
+distribute: build test docs
+	rm -rf dist/
+	docker-compose run --rm python bash -c "\
+		python setup.py sdist && \
+		twine upload dist/* \
+	"
+	git tag $(version)
+	git push --tags
 
 bash:
 	docker-compose run --rm python bash

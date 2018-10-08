@@ -1,33 +1,46 @@
 #!/usr/bin/env python3
 
 import os
+import argparse
 
 import yaml
 
 from .secret import readsecret
-from .db import set_files_perms, wait_for_db
 
 
-SECRET_CONF_FILE = '/src/conf/secrets.yml'
+SECRET_CONF_FILE = 'conf/secrets.yml'
+SECRET_DIR = '/run/secrets'
 
 
-def prepare_django_main():
-    prepare_django()
+def defined_secrets():
+    with open(SECRET_CONF_FILE, 'r') as f:
+        doc = yaml.load(f)
+    return sorted(doc)
 
 
-def prepare(service, secret_conf_file, secret_db_file=None):
-    os.makedirs('/run/secrets', exist_ok=True)
-    with open(secret_conf_file, 'r') as f:
+def prepare(service):
+    os.makedirs(SECRET_DIR, exist_ok=True)
+    with open(SECRET_CONF_FILE, 'r') as f:
         doc = yaml.load(f)
     for secret, _services in doc.items():
         for _service, filedef in _services.items():
             if _service == service:
-                readsecret(secret, database=secret_db_file, store=filedef)
+                readsecret(
+                    secret,
+                    store=os.paht.join(SECRET_DIR, filedef)
+                )
 
 
-def prepare_django():
-    prepare('django', SECRET_CONF_FILE)
-    os.makedirs('/data/files')
-    os.makedirs('/data/latex')
-    set_files_perms()
-    wait_for_db()
+def prepare_cli():
+    parser = argparse.ArgumentParser(
+        description=(
+            'Mounts secrets (as files) to /run/secrets based on '
+            'the settings in conf/secrets.yml'
+        ),
+    )
+    parser.add_argument(
+        'service',
+        help='the service to prepare'
+    )
+    args = parser.parse_args()
+    prepare(args.service)

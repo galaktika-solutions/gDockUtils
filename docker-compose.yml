@@ -1,8 +1,12 @@
 version: "3.7"
 
+volumes:
+  data:
+
 services:
   python:
     build:
         context: .
     volumes:
       - ".:/src"
+      - "data:/data"

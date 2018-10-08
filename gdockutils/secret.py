@@ -8,9 +8,19 @@ import random as rnd
 import string
 
 from . import (
-    printerr, AlreadyExists, SecretDatabaseNotFound, DoesNotExist, get_param,
+    printerr, AlreadyExists, SecretDatabaseNotFound, DoesNotExist,
     uid, gid
 )
+
+
+SECRET_DATABASE_FILE = '.secret.env'
+
+
+def existing():
+    with open(SECRET_DATABASE_FILE, 'r') as db:
+        secretlines = db.readlines()
+    secrets = [l.split('=', 1) for l in secretlines if l]
+    return sorted(dict([(k, v.strip()) for [k, v] in secrets]))
 
 
 def readpart(lst, idx, default=None):
@@ -30,14 +40,8 @@ def readpart(lst, idx, default=None):
 def createsecret_cli():
     parser = argparse.ArgumentParser(
         description=(
-            'Creates a secret in the /project/.secret.env secret database. '
-            'The location of the database file can be set in the SECRET_FILE '
-            'environment variable.'
+            'Creates a secret in the secret database (./.secret.env).'
         ),
-    )
-    parser.add_argument(
-        '-d', '--database',
-        help='the path to the secret database file'
     )
     parser.add_argument(
         '--force',
@@ -64,7 +68,7 @@ def createsecret_cli():
     args = parser.parse_args()
     try:
         createsecret(
-            args.secret, args.database,
+            args.secret,
             args.fromfile, args.random, args.value, args.force
         )
     except (AlreadyExists, SecretDatabaseNotFound) as e:
@@ -75,14 +79,8 @@ def createsecret_cli():
 def readsecret_cli():
     parser = argparse.ArgumentParser(
         description=(
-            'Reads the given secret from the secret database. '
-            'The location of the database file can be set in the SECRET_FILE '
-            'environment variable.'
+            'Reads the given secret from the secret database (./.secret.env).'
         ),
-    )
-    parser.add_argument(
-        '-d', '--database',
-        help='the path to the secret database file'
     )
     parser.add_argument(
         '-s', '--store',
@@ -94,7 +92,7 @@ def readsecret_cli():
     )
     args = parser.parse_args()
     try:
-        ret = readsecret(args.secret, args.database, args.store)
+        ret = readsecret(args.secret, args.store)
     except (DoesNotExist, SecretDatabaseNotFound) as e:
         printerr(e.args[0])
         sys.exit(1)
@@ -102,21 +100,18 @@ def readsecret_cli():
 
 
 def createsecret(
-        secret, database=None, fromfile=None,
+        secret, fromfile=None,
         random=None, value=None, force=None,
 ):
-    # Creating secrets is mostly done by mounting the project folder
-    db_file = get_param(database, 'SECRET_FILE', '/project/.secret.env')
-
     try:
-        readsecret(secret, db_file)
+        readsecret(secret)
     except DoesNotExist:
         pass
     else:
         if not force:
             raise AlreadyExists('Secret %s already exists.' % secret)
 
-    with open(db_file, 'r') as db:
+    with open(SECRET_DATABASE_FILE, 'r') as db:
         secretlines = db.readlines()
     secrets = [l.split('=', 1) for l in secretlines if l]
     secrets = dict([(k, v.strip()) for [k, v] in secrets])
@@ -135,23 +130,20 @@ def createsecret(
 
     secrets[secret] = base64.b64encode(val).decode()
 
-    with open(db_file, 'w') as f:
+    with open(SECRET_DATABASE_FILE, 'w') as f:
         for k, v in secrets.items():
             f.write('%s=%s\n' % (k, v))
 
 
 def readsecret(
-    secret, database=None, store=None, decode=False
+    secret, store=None, decode=False
 ):
-    # Reading secrets is mostly done by "production" containers
-    db_file = get_param(database, 'SECRET_FILE', '/.secret.env')
-
     try:
-        with open(db_file, 'r') as db:
+        with open(SECRET_DATABASE_FILE, 'r') as db:
             secretlines = db.readlines()
     except FileNotFoundError:
         raise SecretDatabaseNotFound(
-            'Secret database %s does not exist.' % db_file
+            'Secret database %s does not exist.' % SECRET_DATABASE_FILE
         )
 
     value = None

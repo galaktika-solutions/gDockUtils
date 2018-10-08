@@ -8,7 +8,7 @@ import time
 
 
 # assumptions on the project structure
-BACKUP_DIR = '/backup'
+BACKUP_DIR = 'backup'
 DATA_FILES_DIR = '/data/files'
 BACKUP_FILE_PREFIX = os.environ.get('HOST_NAME', 'localhost')
 
@@ -28,6 +28,7 @@ def set_backup_perms(backup_uid, backup_gid):
 
 
 def set_files_perms():
+    os.makedirs(DATA_FILES_DIR, exist_ok=True)
     u, g = uid('django'), gid('nginx')
     for root, dirs, files in os.walk(DATA_FILES_DIR):
         os.chown(root, u, g)
@@ -36,7 +37,6 @@ def set_files_perms():
             path = os.path.join(root, f)
             os.chown(path, u, g)
             os.chmod(path, 0o640)
-    os.chown('/data/latex', u, u)
 
 
 def wait_for_db():
@@ -127,9 +127,8 @@ def backup(
     backup_uid = uid(get_param(backup_uid, 'BACKUP_UID', default_uid))
     backup_gid = gid(get_param(backup_gid, 'BACKUP_GID', backup_uid))
 
-    wait_for_db()
-
     if database_format:
+        wait_for_db()
         timestamp = time.strftime('%Y-%m-%d-%H-%M-%S', time.gmtime())
         filename = '{prefix}-db-{timestamp}.backup'
         filename = filename.format(
@@ -157,6 +156,7 @@ def restore(
     drop_db=None, create_db=None, owner=None
 ):
     if db_backup_file:
+        wait_for_db()
         db_backup_file = os.path.join(BACKUP_DIR, 'db', db_backup_file)
         if db_backup_file.endswith('.backup'):
             # -h postgres -U postgres -d postgres

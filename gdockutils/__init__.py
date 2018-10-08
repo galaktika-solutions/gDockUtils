@@ -62,3 +62,7 @@ class SecretDatabaseNotFound(Exception):
 
 class AlreadyExists(Exception):
     pass
+
+
+class NoChoiceError(Exception):
+    pass

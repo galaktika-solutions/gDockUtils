@@ -5,4 +5,3 @@ dist
 htmlcov
 docs/build
 /pyenv
-/.secret.env
