@@ -51,7 +51,7 @@ def wait_for_db():
             break
 
 
-def backup_main():
+def backup_cli():
     parser = argparse.ArgumentParser(
         description=(
             'Creates a backup to the /backup directory'
@@ -84,7 +84,7 @@ def backup_main():
     )
 
 
-def restore_main():
+def restore_cli():
     parser = argparse.ArgumentParser(
         description=(
             'Restores database and files.'

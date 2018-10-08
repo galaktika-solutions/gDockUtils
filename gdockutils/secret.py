@@ -27,7 +27,7 @@ def readpart(lst, idx, default=None):
     return ret
 
 
-def createsecret_main():
+def createsecret_cli():
     parser = argparse.ArgumentParser(
         description=(
             'Creates a secret in the /project/.secret.env secret database. '
@@ -72,7 +72,7 @@ def createsecret_main():
         sys.exit(1)
 
 
-def readsecret_main():
+def readsecret_cli():
     parser = argparse.ArgumentParser(
         description=(
             'Reads the given secret from the secret database. '

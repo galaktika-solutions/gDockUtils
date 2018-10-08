@@ -29,10 +29,10 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'gprun=gdockutils.gprun:main',
-            'ask=gdockutils.ask:main',
-            'createsecret=gdockutils.secret:createsecret_main',
-            'readsecret=gdockutils.secret:readsecret_main',
+            'gprun=gdockutils.gprun:gprun_cli',
+            'ask=gdockutils.ui:ask_cli',
+            'createsecret=gdockutils.secret:createsecret_cli',
+            'readsecret=gdockutils.secret:readsecret_cli',
             'backup=gdockutils.db:backup_main',
             'restore=gdockutils.db:restore_main',
             'prepare_django=gdockutils.prepare:prepare_django_main'

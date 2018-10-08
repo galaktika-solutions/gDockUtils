@@ -107,7 +107,7 @@ def gprun(userspec=None, stopsignal=None, command=[]):
     sys.exit(proc.wait())
 
 
-def main():
+def gprun_cli():
     parser = argparse.ArgumentParser(
         description=(
             'Runs the specified command using different user/group.\n'

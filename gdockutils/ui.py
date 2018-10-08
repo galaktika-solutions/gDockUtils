@@ -5,7 +5,7 @@ import argparse
 from . import printerr
 
 
-def main():
+def ask_cli():
     parser = argparse.ArgumentParser(
         description=(
             'Asks the user to select one from a list of options.'
