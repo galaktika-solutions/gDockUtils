@@ -3,19 +3,21 @@ import subprocess
 import os
 import pwd
 import grp
+import shutil
 
 
 def printerr(s, end='\n'):
     print(s, file=sys.stderr, end=end)
 
 
-def run(cmd, silent=False, log_command=False):
+def run(cmd, silent=False, log_command=False, cwd=None):
     if log_command:
         printerr(' '.join(cmd))
     subprocess.run(
         cmd, check=True,
         stdout=subprocess.PIPE if silent else None,
-        stderr=subprocess.PIPE if silent else None
+        stderr=subprocess.PIPE if silent else None,
+        cwd=cwd
     )
 
 
@@ -50,6 +52,12 @@ def gid(spec):
             raise Exception('Group %r does not exist' % spec)
         else:
             return gr.gr_gid
+
+
+def cp(source, dest, _uid=-1, _gid=-1, mode=None):
+    shutil.copyfile(source, dest)
+    os.chown(dest, uid(_uid), gid(_gid))
+    os.chmod(dest, mode)
 
 
 class DoesNotExist(Exception):

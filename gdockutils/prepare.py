@@ -27,7 +27,8 @@ def prepare(service):
             if _service == service:
                 readsecret(
                     secret,
-                    store=os.paht.join(SECRET_DIR, filedef)
+                    store=filedef,
+                    secret_dir=SECRET_DIR
                 )
 
 

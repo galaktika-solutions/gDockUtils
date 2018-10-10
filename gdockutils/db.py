@@ -1,16 +1,103 @@
 #!/usr/bin/env python3
 
 import argparse
-from . import get_param, uid, gid
-from . import printerr, run
 import os
 import time
+from hashlib import md5 as _md5
+
+from . import get_param, uid, gid, printerr, run, cp
+from .prepare import prepare
+from .secret import readsecret
+from .gprun import gprun
 
 
 # assumptions on the project structure
 BACKUP_DIR = 'backup'
 DATA_FILES_DIR = '/data/files'
 BACKUP_FILE_PREFIX = os.environ.get('HOST_NAME', 'localhost')
+PG_HBA_ORIG = 'conf/pg_hba.conf'
+POSTGRESCONF_ORIG = 'conf/postgresql.conf'
+
+
+def md5(s):
+    return _md5(s.encode()).hexdigest()
+
+
+def ensure_db_cli():
+    parser = argparse.ArgumentParser(
+        description=(
+            'Creates database objects and sets up passwords'
+        ),
+    )
+    parser.add_argument(
+        'database',
+        help='the database to create',
+    )
+    args = parser.parse_args()
+
+    ensure_db(args.database)
+
+
+def ensure_db(db):
+    """
+    Initialize the database, set up users and passwords
+    """
+    PGDATA = os.environ.get('PGDATA')
+    os.makedirs(PGDATA, exist_ok=True)
+    os.chmod(PGDATA, 0o700)
+    u, g = uid('postgres'), gid('postgres')
+    for root, dirs, files in os.walk(PGDATA):
+        os.chown(root, u, g)
+
+    PG_VERSION = os.path.join(PGDATA, 'PG_VERSION')
+    if not os.path.isfile(PG_VERSION) or os.path.getsize(PG_VERSION) == 0:
+        gprun(userspec='postgres', command=['initdb'], sys_exit=False)
+
+    dest = os.path.join(PGDATA, 'pg_hba.conf')
+    cp(PG_HBA_ORIG, dest, 'postgres', 'postgres', 0o600)
+
+    dest = os.path.join(PGDATA, 'postgresql.conf')
+    cp(POSTGRESCONF_ORIG, dest, 'postgres', 'postgres', 0o600)
+
+    prepare('postgres')
+
+    dbpass = readsecret('DB_PASSWORD', decode=True)
+    dbpass_postgres = "'md5%s'" % md5(dbpass + 'postgres')
+    dbpass_django = "'md5%s'" % md5(dbpass + 'django')
+    dbpass_explorer = "'md5%s'" % md5(dbpass + 'explorer')
+
+    # start postgres locally
+    gprun(userspec='postgres', sys_exit=False, command=[
+        'pg_ctl',
+        '-o', "-c listen_addresses='127.0.0.1'",
+        '-o', "-c log_statement=none",
+        '-o', "-c log_connections=off",
+        '-o', "-c log_disconnections=off",
+        '-w', 'start'
+    ])
+
+    run([
+        'psql', '-h', '127.0.0.1', '-U', 'postgres',
+        '-c', 'ALTER ROLE postgres ENCRYPTED PASSWORD %s' % dbpass_postgres,
+        '-c', 'CREATE ROLE django',
+        '-c', 'ALTER ROLE django '
+              'ENCRYPTED PASSWORD %s LOGIN SUPERUSER' % dbpass_django,
+        '-c', 'CREATE ROLE explorer',
+        '-c', 'ALTER ROLE explorer '
+              'ENCRYPTED PASSWORD %s LOGIN' % dbpass_explorer,
+        '-c', '\c postgres django',
+        '-c', 'CREATE DATABASE %s' % db,
+        '-c', '\c %s django' % db,
+        '-c', 'REVOKE CREATE ON SCHEMA public FROM public',
+        '-c', 'GRANT SELECT ON ALL TABLES IN SCHEMA public TO explorer',
+        '-c', 'ALTER DEFAULT PRIVILEGES FOR USER django IN SCHEMA public '
+              'GRANT SELECT ON TABLES TO explorer'
+    ])
+
+    # stop the internally started postgres
+    gprun(userspec='postgres', sys_exit=False, command=[
+        'pg_ctl', 'stop', '-s', '-w', '-m', 'fast'
+    ])
 
 
 def set_backup_perms(backup_uid, backup_gid):

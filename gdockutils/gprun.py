@@ -66,7 +66,7 @@ def get_userspec(spec):
     return uid, username, homedir, gid, groups
 
 
-def gprun(userspec=None, stopsignal=None, command=[]):
+def gprun(userspec=None, stopsignal=None, command=[], sys_exit=True):
     uid, username, homedir, gid, groups = get_userspec(userspec)
 
     def preexec():
@@ -104,7 +104,9 @@ def gprun(userspec=None, stopsignal=None, command=[]):
     signal.signal(signal.SIGTERM, handler)
     signal.signal(signal.SIGINT, handler)
 
-    sys.exit(proc.wait())
+    returncode = proc.wait()
+    if sys_exit:
+        sys.exit(returncode)
 
 
 def gprun_cli():
@@ -141,3 +143,7 @@ def gprun_cli():
         stopsignal=args.stopsignal,
         command=args.command
     )
+
+
+if __name__ == '__main__':
+    gprun_cli()

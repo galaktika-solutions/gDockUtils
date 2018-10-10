@@ -84,7 +84,7 @@ def ask(options=[], prompt='', default=None, multiple=False, yesno=False):
         else:
             msg = 'y/n'
         while True:
-            printerr('%s [%s]: ' % prompt, msg, end='')
+            printerr('%s [%s]: ' % (prompt, msg), end='')
             i = input()
             if not i and default:
                 return True if default == 'y' else False

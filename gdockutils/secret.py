@@ -136,7 +136,7 @@ def createsecret(
 
 
 def readsecret(
-    secret, store=None, decode=False
+    secret, store=None, decode=False, secret_dir=''
 ):
     try:
         with open(SECRET_DATABASE_FILE, 'r') as db:
@@ -164,7 +164,7 @@ def readsecret(
     stat = os.stat('.')
     default_uid, default_gid = stat.st_uid, stat.st_gid
     parts = store.split(':')
-    fn = readpart(parts, 0)
+    fn = os.path.join(secret_dir, readpart(parts, 0))
     _uid = uid(readpart(parts, 1, default_uid))
     _gid = gid(readpart(parts, 2, default_gid))
     mode = int(readpart(parts, 3, '600'), 8)
