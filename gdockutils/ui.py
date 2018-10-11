@@ -18,7 +18,7 @@ SECRET_SOURCE_DIR = '.files'
 def ask_cli():
     parser = argparse.ArgumentParser(
         description=(
-            'Asks the user to select one from a list of options.'
+            'Asks the user to select one (or more) from a list of options.'
         ),
     )
     parser.add_argument(
@@ -76,6 +76,16 @@ def ask_cli():
 
 
 def ask(options=[], prompt='', default=None, multiple=False, yesno=False):
+    """
+    Asks the user to select one (or more) from a list of options.
+
+    Example::
+
+        from gdockutils.ui import ask
+
+        ask(prompt='Are you sure?', yesno=True, default='n')
+    """
+
     if yesno:
         if default == 'y':
             msg = 'Y/n'

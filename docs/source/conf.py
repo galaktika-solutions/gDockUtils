@@ -25,7 +25,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'gDockUtils'
-copyright = ''
+copyright = 'Galaktika Solutions 2018'
 author = ''
 today_fmt = '%Y-%m-%d'
 version = VERSION

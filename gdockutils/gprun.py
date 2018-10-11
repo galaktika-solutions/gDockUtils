@@ -67,6 +67,25 @@ def get_userspec(spec):
 
 
 def gprun(userspec=None, stopsignal=None, command=[], sys_exit=True):
+    """
+    Runs the specified command using different user/group. On SIGTERM and
+    SIGINT, sends the specified signal to the process.
+
+    :param str userspec: either a user name (``john``) or user name and
+      group name separated with colon (``john:postgres``).
+      Numeric uid/gid values can be used instead of names.
+    :param str stopsignal: the signal to send to the subprocess when a
+      ``SIGTERM`` or a ``SIGINT`` received. ex.: ``SIGINT``.
+    :param list command: the same as in ``subprocess.run()``.
+    :param bool sys_exit: if set to ``False``, the system will not exit when
+      the subprocess exits.
+
+    Example::
+
+        from gdockutils.gprun import gprun
+
+        gprun(userspec='postgres', command=['initdb'], sys_exit=False)
+    """
     uid, username, homedir, gid, groups = get_userspec(userspec)
 
     def preexec():
