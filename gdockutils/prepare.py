@@ -6,7 +6,6 @@ import argparse
 import yaml
 
 from .secret import readsecret
-from .db import wait_for_db
 
 
 SECRET_CONF_FILE = 'conf/secrets.yml'
@@ -32,6 +31,7 @@ def prepare(service, wait=False):
                     secret_dir=SECRET_DIR
                 )
     if wait:
+        from .db import wait_for_db
         wait_for_db()
 
 
