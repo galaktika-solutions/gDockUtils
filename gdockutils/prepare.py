@@ -6,6 +6,7 @@ import argparse
 import yaml
 
 from .secret import readsecret
+from .db import wait_for_db
 
 
 SECRET_CONF_FILE = 'conf/secrets.yml'
@@ -18,7 +19,7 @@ def defined_secrets():
     return sorted(doc)
 
 
-def prepare(service):
+def prepare(service, wait=False):
     os.makedirs(SECRET_DIR, exist_ok=True)
     with open(SECRET_CONF_FILE, 'r') as f:
         doc = yaml.load(f)
@@ -30,6 +31,8 @@ def prepare(service):
                     store=filedef,
                     secret_dir=SECRET_DIR
                 )
+    if wait:
+        wait_for_db()
 
 
 def prepare_cli():
@@ -40,8 +43,12 @@ def prepare_cli():
         ),
     )
     parser.add_argument(
+        '-w', '--wait',
+        help='wait for the database to start', action="store_true"
+    )
+    parser.add_argument(
         'service',
         help='the service to prepare'
     )
     args = parser.parse_args()
-    prepare(args.service)
+    prepare(args.service, args.wait)
