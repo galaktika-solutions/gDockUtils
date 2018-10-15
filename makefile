@@ -19,8 +19,8 @@ docs:
 	docker-compose run --rm python sphinx-build -b html docs/source docs/build
 
 distribute: build test docs
-	rm -rf dist/
 	docker-compose run --rm python bash -c "\
+		rm -rf dist && \
 		python setup.py sdist && \
 		twine upload dist/* \
 	"
