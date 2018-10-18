@@ -3,7 +3,7 @@ import time
 import os
 
 from . import run, cp
-from .ui import SECRET_SOURCE_DIR
+from . import SECRET_SOURCE_DIR
 
 
 def create(hostnames, ips):

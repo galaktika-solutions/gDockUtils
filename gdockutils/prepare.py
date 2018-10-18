@@ -6,10 +6,7 @@ import argparse
 import yaml
 
 from .secret import readsecret
-
-
-SECRET_CONF_FILE = 'conf/secrets.yml'
-SECRET_DIR = '/run/secrets'
+from . import SECRET_CONF_FILE, SECRET_DIR
 
 
 def defined_secrets():

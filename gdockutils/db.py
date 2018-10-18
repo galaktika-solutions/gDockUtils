@@ -6,17 +6,13 @@ import time
 from hashlib import md5 as _md5
 
 from . import get_param, uid, gid, printerr, run, cp
+from . import (
+    POSTGRESCONF_ORIG, PG_HBA_ORIG, BACKUP_DIR, DATA_FILES_DIR,
+    BACKUP_FILE_PREFIX
+)
 from .prepare import prepare
 from .secret import readsecret
 from .gprun import gprun
-
-
-# assumptions on the project structure
-BACKUP_DIR = 'backup'
-DATA_FILES_DIR = '/data/files'
-BACKUP_FILE_PREFIX = os.environ.get('HOST_NAME', 'localhost')
-PG_HBA_ORIG = 'conf/pg_hba.conf'
-POSTGRESCONF_ORIG = 'conf/postgresql.conf'
 
 
 def md5(s):
@@ -246,9 +242,8 @@ def restore(
         wait_for_db()
         db_backup_file = os.path.join(BACKUP_DIR, 'db', db_backup_file)
         if db_backup_file.endswith('.backup'):
-            # -h postgres -U postgres -d postgres
             cmd = [
-                'pg_restore', '--exit-on-error', '--verbose',
+                'pg_restore', '-d', 'postgres', '--exit-on-error', '--verbose',
                 '--clean', '--create', db_backup_file
             ]
             run(cmd, log_command=True)

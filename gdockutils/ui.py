@@ -4,15 +4,12 @@ import argparse
 import sys
 import os
 
-from . import printerr, NoChoiceError
+from . import printerr, NoChoiceError, SECRET_SOURCE_DIR, SECRET_DATABASE_FILE
 from .db import BACKUP_DIR, restore, backup
 from .secret import (
-    SECRET_DATABASE_FILE, readsecret, DoesNotExist, createsecret, existing
+    readsecret, DoesNotExist, createsecret, existing
 )
 from .prepare import defined_secrets
-
-
-SECRET_SOURCE_DIR = '.files'
 
 
 def ask_cli():

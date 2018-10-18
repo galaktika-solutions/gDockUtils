@@ -6,6 +6,22 @@ import grp
 import shutil
 
 
+SECRET_CONF_FILE = 'conf/secrets.yml'
+SECRET_DIR = '/run/secrets'
+BACKUP_DIR = 'backup'
+DATA_FILES_DIR = '/data/files'
+BACKUP_FILE_PREFIX = os.environ.get('HOST_NAME', 'localhost')
+PG_HBA_ORIG = 'conf/pg_hba.conf'
+POSTGRESCONF_ORIG = 'conf/postgresql.conf'
+SECRET_DATABASE_FILE = '.secret.env'
+SECRET_SOURCE_DIR = '.files'
+
+
+def read_secret_from_file(secret):
+    with open(os.path.join(SECRET_DIR, secret)) as f:
+        return f.read()
+
+
 def printerr(s, end='\n'):
     print(s, file=sys.stderr, end=end)
 

@@ -9,11 +9,8 @@ import string
 
 from . import (
     printerr, AlreadyExists, SecretDatabaseNotFound, DoesNotExist,
-    uid, gid
+    uid, gid, SECRET_DATABASE_FILE
 )
-
-
-SECRET_DATABASE_FILE = '.secret.env'
 
 
 def existing():
