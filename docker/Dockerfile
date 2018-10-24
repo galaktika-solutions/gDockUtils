@@ -32,6 +32,11 @@ ENV PYTHONUNBUFFERED 1
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir pyyaml
 
+RUN pip install --no-cache-dir coverage
+RUN pip install --no-cache-dir sphinx
+RUN pip install --no-cache-dir sphinx_rtd_theme
+RUN pip install --no-cache-dir twine
+
 COPY / /src
 WORKDIR /src
 

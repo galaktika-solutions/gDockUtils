@@ -8,7 +8,7 @@ build:
 	docker-compose build
 
 test:
-	docker-compose run --rm python bash -c "\
+	docker-compose run --rm postgres bash -c "\
 		coverage run --source gdockutils -m unittest && \
 		coverage report && \
 		coverage html \
@@ -16,10 +16,10 @@ test:
 
 .PHONY: docs
 docs:
-	docker-compose run --rm python sphinx-build -b html docs/source docs/build
+	docker-compose run --rm postgres sphinx-build -b html docs/source docs/build
 
 distribute: build test docs
-	docker-compose run --rm python bash -c "\
+	docker-compose run --rm postgres bash -c "\
 		rm -rf dist && \
 		python setup.py sdist && \
 		twine upload dist/* \
@@ -28,4 +28,4 @@ distribute: build test docs
 	git push --tags
 
 bash:
-	docker-compose run --rm python bash
+	docker-compose run --rm postgres bash
