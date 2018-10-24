@@ -164,7 +164,7 @@ def readsecret(
     fn = os.path.join(secret_dir, readpart(parts, 0))
     _uid = uid(readpart(parts, 1, default_uid))
     _gid = gid(readpart(parts, 2, default_gid))
-    mode = int(readpart(parts, 3, '600'), 8)
+    mode = int(readpart(parts, 3, '400'), 8)
 
     with open(fn, 'wb') as f:
         f.write(value)

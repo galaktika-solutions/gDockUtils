@@ -15,6 +15,10 @@ PG_HBA_ORIG = 'conf/pg_hba.conf'
 POSTGRESCONF_ORIG = 'conf/postgresql.conf'
 SECRET_DATABASE_FILE = '.secret.env'
 SECRET_SOURCE_DIR = '.files'
+PGDATA = '/data/postgres'
+DATABASE_NAME = 'django'
+DATABASE_USER = 'django'
+DATABASE_HOST = 'postgres'
 
 
 def read_secret_from_file(secret):
@@ -26,14 +30,14 @@ def printerr(s, end='\n'):
     print(s, file=sys.stderr, end=end)
 
 
-def run(cmd, silent=False, log_command=False, cwd=None):
+def run(cmd, silent=False, log_command=False, cwd=None, env=None):
     if log_command:
         printerr(' '.join(cmd))
     subprocess.run(
         cmd, check=True,
         stdout=subprocess.PIPE if silent else None,
         stderr=subprocess.PIPE if silent else None,
-        cwd=cwd
+        cwd=cwd, env=env
     )
 
 

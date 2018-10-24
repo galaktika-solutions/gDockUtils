@@ -2,4 +2,6 @@
 pyenv
 dist
 htmlcov
+/backup
 /.secret.env
+/.files

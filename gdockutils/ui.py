@@ -5,7 +5,8 @@ import sys
 import os
 
 from . import printerr, NoChoiceError, SECRET_SOURCE_DIR, SECRET_DATABASE_FILE
-from .db import BACKUP_DIR, restore, backup
+from . import BACKUP_DIR
+from .db import restore, backup
 from .secret import (
     readsecret, DoesNotExist, createsecret, existing
 )
@@ -268,8 +269,9 @@ def createsecret_ui():
     except DoesNotExist:
         pass
     else:
+        prompt = '%s already exists. Would you like to recreate it?' % secret
         if not ask(
-            prompt='The secret already exists. Would you like to recreate it?',
+            prompt=prompt,
             yesno=True, default='n'
         ):
             return
@@ -290,14 +292,16 @@ def createsecret_ui():
         if entries:
             msg = 'encode a file in the %s folder' % SECRET_SOURCE_DIR
             modes.insert(0, ('f', msg))
-    mode = ask(modes, prompt='How would you like to create the secret?')
+    prompt = 'How would you like to create the secret %s ?' % secret
+    mode = ask(modes, prompt=prompt)
     if mode == 'f':
-        source_file = ask(entries, 'Select the file')
+        prompt = 'Select the source file of %s' % secret
+        source_file = ask(entries, prompt)
         source_file = os.path.join(SECRET_SOURCE_DIR, source_file)
         createsecret(secret, fromfile=source_file, force=True)
     elif mode == 'r':
         while True:
-            printerr('Enter the length of the string (1-999)', end=': ')
+            printerr('Enter the length of %s (1-999)' % secret, end=': ')
             i = input()
             try:
                 i = int(i)
@@ -307,7 +311,7 @@ def createsecret_ui():
                 continue
         createsecret(secret, random=i, force=True)
     else:
-        printerr('Enter the secret value', end=': ')
+        printerr('Enter the value for %s' % secret, end=': ')
         createsecret(secret, value=input(), force=True)
 
 

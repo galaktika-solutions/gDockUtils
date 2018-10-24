@@ -5,15 +5,16 @@ import io
 
 here = os.path.abspath(os.path.dirname(__file__))
 
-with io.open(os.path.join(here, 'README.rst'), encoding='utf-8') as f:
+with io.open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = '\n' + f.read()
 
-VERSION = '0.3.3'
+VERSION = '0.4.0'
 
 setup(
     name='gdockutils',
     description='Galaktika Solutions - Docker Utilities',
     long_description=long_description,
+    long_description_content_type="text/markdown",
     version=VERSION,
     url='https://github.com/galaktika-solutions/gDockUtils',
     author='Richard Bann',

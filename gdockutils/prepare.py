@@ -20,13 +20,12 @@ def prepare(service, wait=False):
     with open(SECRET_CONF_FILE, 'r') as f:
         doc = yaml.load(f)
     for secret, _services in doc.items():
-        for _service, filedef in _services.items():
-            if _service == service:
-                readsecret(
-                    secret,
-                    store=filedef,
-                    secret_dir=SECRET_DIR
-                )
+        if _services and service in _services:
+            readsecret(
+                secret,
+                store='%s:%s:%s:400' % (secret, service, service),
+                secret_dir=SECRET_DIR
+            )
     if wait:
         from .db import wait_for_db
         wait_for_db()

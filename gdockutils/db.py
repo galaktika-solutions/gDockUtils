@@ -5,14 +5,31 @@ import os
 import time
 from hashlib import md5 as _md5
 
-from . import get_param, uid, gid, printerr, run, cp
+from . import get_param, uid, gid, printerr, run, cp, read_secret_from_file
 from . import (
     POSTGRESCONF_ORIG, PG_HBA_ORIG, BACKUP_DIR, DATA_FILES_DIR,
-    BACKUP_FILE_PREFIX
+    BACKUP_FILE_PREFIX, PGDATA, DATABASE_NAME, DATABASE_USER, DATABASE_HOST
 )
 from .prepare import prepare
 from .secret import readsecret
 from .gprun import gprun
+
+
+DB_ENV = {
+    'PGHOST': DATABASE_HOST,
+    'PGSSLMODE': 'verify-ca',
+    'PGSSLROOTCERT': '/run/secrets/PG_SERVER_CACERT',
+    'PGSSLKEY': '/run/secrets/PG_CLIENT_KEY',
+    'PGSSLCERT': '/run/secrets/PG_CLIENT_CERT',
+}
+
+
+def get_db_env(d=DATABASE_NAME, u=DATABASE_USER):
+    ret = DB_ENV.copy()
+    ret['PGUSER'] = u
+    ret['PGDATABASE'] = d
+    ret['PGPASSWORD'] = read_secret_from_file('DB_PASSWORD_%s' % u.upper())
+    return ret
 
 
 def md5(s):
@@ -26,19 +43,24 @@ def ensure_db_cli():
         ),
     )
     parser.add_argument(
-        'database',
+        '-d', '--database',
         help='the database to create',
+        default=DATABASE_NAME
+    )
+    parser.add_argument(
+        '-u', '--user',
+        help='the database user',
+        default=DATABASE_USER
     )
     args = parser.parse_args()
 
-    ensure_db(args.database)
+    ensure_db(args.database, args.user)
 
 
-def ensure_db(db):
+def ensure_db(db, user):
     """
     Initialize the database, set up users and passwords
     """
-    PGDATA = os.environ.get('PGDATA')
     os.makedirs(PGDATA, exist_ok=True)
     os.chmod(PGDATA, 0o700)
     u, g = uid('postgres'), gid('postgres')
@@ -57,9 +79,11 @@ def ensure_db(db):
 
     prepare('postgres')
 
-    dbpass = readsecret('DB_PASSWORD', decode=True)
+    dbpass = readsecret('DB_PASSWORD_POSTGRES', decode=True)
     dbpass_postgres = "'md5%s'" % md5(dbpass + 'postgres')
-    dbpass_django = "'md5%s'" % md5(dbpass + 'django')
+    dbpass = readsecret('DB_PASSWORD_DJANGO', decode=True)
+    dbpass_django = "'md5%s'" % md5(dbpass + user)
+    dbpass = readsecret('DB_PASSWORD_EXPLORER', decode=True)
     dbpass_explorer = "'md5%s'" % md5(dbpass + 'explorer')
 
     # start postgres locally
@@ -75,15 +99,15 @@ def ensure_db(db):
     run([
         'psql', '-h', '127.0.0.1', '-U', 'postgres',
         '-c', 'ALTER ROLE postgres ENCRYPTED PASSWORD %s' % dbpass_postgres,
-        '-c', 'CREATE ROLE django',
-        '-c', 'ALTER ROLE django '
-              'ENCRYPTED PASSWORD %s LOGIN SUPERUSER' % dbpass_django,
+        '-c', 'CREATE ROLE %s' % user,
+        '-c', 'ALTER ROLE %s '
+              'ENCRYPTED PASSWORD %s LOGIN SUPERUSER' % (user, dbpass_django),
         '-c', 'CREATE ROLE explorer',
         '-c', 'ALTER ROLE explorer '
               'ENCRYPTED PASSWORD %s LOGIN' % dbpass_explorer,
-        '-c', '\c postgres django',
+        '-c', '\c postgres %s' % user,
         '-c', 'CREATE DATABASE %s' % db,
-        '-c', '\c %s django' % db,
+        '-c', '\c %s %s' % (db, user),
         '-c', 'REVOKE CREATE ON SCHEMA public FROM public',
         '-c', 'GRANT SELECT ON ALL TABLES IN SCHEMA public TO explorer',
         '-c', 'ALTER DEFAULT PRIVILEGES FOR USER django IN SCHEMA public '
@@ -125,7 +149,8 @@ def set_files_perms():
 def wait_for_db():
     while True:
         try:
-            run(['psql', '-c', 'select 1'], silent=True)
+            silent = not os.environ.get('GDOCKUTILS_DEBUG')
+            run(['psql', '-c', 'select 1'], silent=silent, env=get_db_env())
         except Exception:
             printerr('db not ready yet')
             time.sleep(1)
@@ -185,14 +210,17 @@ def restore_cli():
     parser.add_argument(
         '--drop_db',
         help='the database to drop',
+        default=DATABASE_NAME
     )
     parser.add_argument(
         '--create_db',
         help='the database to create',
+        default=DATABASE_NAME
     )
     parser.add_argument(
         '--owner',
         help='the owner of the created database',
+        default=DATABASE_USER
     )
     args = parser.parse_args()
 
@@ -206,9 +234,10 @@ def backup(
     database_format=None, files=None,
     backup_uid=None, backup_gid=None
 ):
-    default_uid = os.stat('.').st_uid
+    default_uid = 0  # default is root to be on the safe side
     backup_uid = uid(get_param(backup_uid, 'BACKUP_UID', default_uid))
     backup_gid = gid(get_param(backup_gid, 'BACKUP_GID', backup_uid))
+    set_backup_perms(backup_uid, backup_gid)
 
     if database_format:
         wait_for_db()
@@ -222,7 +251,7 @@ def backup(
         filename = os.path.join(BACKUP_DIR, 'db', filename)
 
         cmd = ['pg_dump', '-v', '-F', database_format, '-f', filename]
-        run(cmd, log_command=True)
+        run(cmd, env=get_db_env(), log_command=True)
 
     if files:
         cmd = [
@@ -236,7 +265,7 @@ def backup(
 
 def restore(
     db_backup_file=None, files=None,
-    drop_db=None, create_db=None, owner=None
+    drop_db=DATABASE_NAME, create_db=DATABASE_NAME, owner=DATABASE_USER
 ):
     if db_backup_file:
         wait_for_db()
@@ -246,7 +275,7 @@ def restore(
                 'pg_restore', '-d', 'postgres', '--exit-on-error', '--verbose',
                 '--clean', '--create', db_backup_file
             ]
-            run(cmd, log_command=True)
+            run(cmd, log_command=True, env=get_db_env())
         elif db_backup_file.endswith('.backup.sql'):
             drop_db = get_param(drop_db, 'DROP_DB', 'django')
             create_db = get_param(create_db, 'CREATE_DB', drop_db)
@@ -255,11 +284,11 @@ def restore(
                 'psql', '-U', 'postgres', '-d', 'postgres',
                 '-c', 'DROP DATABASE %s' % drop_db,
                 '-c', 'CREATE DATABASE %s OWNER %s' % (create_db, owner)
-            ])
+            ], env=get_db_env(u='postgres', d='postgres'))
             run([
                 'psql', '-v', 'ON_ERROR_STOP=1', '-U', owner, '-d', create_db,
                 '-f', db_backup_file
-            ])
+            ], env=get_db_env(u=owner, d=create_db))
 
     if files:
         cmd = [
