@@ -18,9 +18,9 @@ from .gprun import gprun
 DB_ENV = {
     'PGHOST': DATABASE_HOST,
     'PGSSLMODE': 'verify-ca',
-    'PGSSLROOTCERT': '/run/secrets/PG_SERVER_CACERT',
-    'PGSSLKEY': '/run/secrets/PG_CLIENT_KEY',
-    'PGSSLCERT': '/run/secrets/PG_CLIENT_CERT',
+    'PGSSLROOTCERT': '/run/secrets/PG_SERVER_SSL_CACERT',
+    'PGSSLKEY': '/run/secrets/PG_CLIENT_SSL_KEY',
+    'PGSSLCERT': '/run/secrets/PG_CLIENT_SSL_CERT',
 }
 
 
