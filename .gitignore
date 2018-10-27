@@ -6,3 +6,5 @@ htmlcov
 docs/build
 /pyenv
 /backup
+.env
+.secret.env

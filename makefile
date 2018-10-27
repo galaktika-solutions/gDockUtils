@@ -19,11 +19,7 @@ docs:
 	docker-compose run --rm postgres sphinx-build -b html docs/source docs/build
 
 distribute: build test docs
-	docker-compose run --rm postgres bash -c "\
-		rm -rf dist && \
-		python setup.py sdist && \
-		twine upload dist/* \
-	"
+	docker-compose run --rm postgres distribute
 	git tag $(version)
 	git push --tags
 
