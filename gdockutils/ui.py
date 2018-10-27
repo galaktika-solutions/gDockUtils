@@ -8,7 +8,7 @@ from . import printerr, NoChoiceError, SECRET_SOURCE_DIR, SECRET_DATABASE_FILE
 from . import BACKUP_DIR
 from .db import restore, backup
 from .secret import (
-    readsecret, DoesNotExist, createsecret, existing
+    readsecret, SecretDoesNotExist, createsecret, existing
 )
 from .prepare import defined_secrets
 
@@ -266,7 +266,7 @@ def createsecret_ui():
     )
     try:
         readsecret(secret)
-    except DoesNotExist:
+    except SecretDoesNotExist:
         pass
     else:
         prompt = '%s already exists. Would you like to recreate it?' % secret

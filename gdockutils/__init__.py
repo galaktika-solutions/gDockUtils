@@ -80,7 +80,7 @@ def cp(source, dest, _uid=-1, _gid=-1, mode=None):
     os.chmod(dest, mode)
 
 
-class DoesNotExist(Exception):
+class SecretDoesNotExist(Exception):
     pass
 
 

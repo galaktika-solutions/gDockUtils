@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import os
-import argparse
 
 import yaml
 
@@ -29,22 +28,3 @@ def prepare(service, wait=False):
     if wait:
         from .db import wait_for_db
         wait_for_db()
-
-
-def prepare_cli():
-    parser = argparse.ArgumentParser(
-        description=(
-            'Mounts secrets (as files) to /run/secrets based on '
-            'the settings in conf/secrets.yml'
-        ),
-    )
-    parser.add_argument(
-        '-w', '--wait',
-        help='wait for the database to start', action="store_true"
-    )
-    parser.add_argument(
-        'service',
-        help='the service to prepare'
-    )
-    args = parser.parse_args()
-    prepare(args.service, args.wait)

@@ -1,4 +1,3 @@
-import argparse
 import time
 import os
 
@@ -63,24 +62,3 @@ def create(hostnames, ips):
         os.path.join(SECRET_SOURCE_DIR, '%s-%s.key' % (cn, timestamp)),
         stat.st_uid, stat.st_gid, mode=0o644
     )
-
-
-def create_cli():
-    parser = argparse.ArgumentParser(
-        description=(
-            'Creates certificates for development purposes.'
-        ),
-    )
-    parser.add_argument(
-        '-n', '--hostname', action='append',
-        help='specify a host name'
-    )
-    parser.add_argument(
-        '-i', '--ip', action='append',
-        help='specify an ip address'
-    )
-    args = parser.parse_args()
-    if not args.hostname:
-        parser.error('At least one host name must be specified.')
-
-    create(args.hostname, args.ip)

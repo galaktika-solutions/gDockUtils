@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-
-import argparse
 import pwd
 import grp
 import os
@@ -126,43 +123,3 @@ def gprun(userspec=None, stopsignal=None, command=[], sys_exit=True):
     returncode = proc.wait()
     if sys_exit:
         sys.exit(returncode)
-
-
-def gprun_cli():
-    parser = argparse.ArgumentParser(
-        description=(
-            'Runs the specified command using different user/group.\n'
-            'On SIGTERM and SIGINT, sends the specified signal to the process.'
-        ),
-        usage='gprun [-h] [-u USERSPEC] [-s STOPSIGNAL] command [...]'
-    )
-    parser.add_argument(
-        '-u', '--userspec',
-        help=(
-            'user/group to switch to in the form '
-            '(uid|username)[:(gid|groupname)]'
-        )
-    )
-    parser.add_argument(
-        '-s', '--stopsignal',
-        help='the name of the signal to send to the process'
-    )
-    parser.add_argument(
-        'command',
-        nargs=argparse.REMAINDER,
-        # nargs='+',
-        help='the command to run'
-    )
-    args = parser.parse_args()
-    if not args.command:
-        parser.error('No command given')
-
-    gprun(
-        userspec=args.userspec,
-        stopsignal=args.stopsignal,
-        command=args.command
-    )
-
-
-if __name__ == '__main__':
-    gprun_cli()

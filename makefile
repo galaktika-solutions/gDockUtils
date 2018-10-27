@@ -1,6 +1,9 @@
 SHELL=/bin/bash
 version := $(shell sed -rn "s/^VERSION = '(.*)'$$/\1/p" setup.py)
 
+clean:
+	docker-compose run --rm postgres find . -type d -name __pycache__ -exec rm -rf {} +
+
 version:
 	@echo $(version)
 
@@ -8,6 +11,7 @@ build:
 	docker-compose build
 
 test:
+	find .files -type f -exec rm {} +
 	docker-compose run --rm postgres bash -c "\
 		coverage run --source gdockutils -m unittest && \
 		coverage report && \

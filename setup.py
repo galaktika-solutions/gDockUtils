@@ -30,19 +30,19 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'gprun=gdockutils.gprun:gprun_cli',
+            'createcerts=gdockutils.cli:createcerts',
+            'gprun=gdockutils.cli:gprun',
+            'ensure_db=gdockutils.cli:ensure_db',
+            'backup=gdockutils.cli:backup',
+            'restore=gdockutils.cli:restore',
             'ask=gdockutils.ui:ask_cli',
-            'createsecret=gdockutils.secret:createsecret_cli',
+            'createsecret=gdockutils.cli:createsecret',
+            'readsecret=gdockutils.cli:readsecret',
+            'prepare=gdockutils.cli:prepare',
             'createsecret_ui=gdockutils.ui:createsecret_ui',
-            'readsecret=gdockutils.secret:readsecret_cli',
             'readsecret_ui=gdockutils.ui:readsecret_ui',
-            'ensure_db=gdockutils.db:ensure_db_cli',
-            'backup=gdockutils.db:backup_cli',
             'backup_ui=gdockutils.ui:backup_ui',
-            'restore=gdockutils.db:restore_cli',
             'restore_ui=gdockutils.ui:restore_ui',
-            'prepare=gdockutils.prepare:prepare_cli',
-            'createcerts=gdockutils.certificates:create_cli'
         ],
     }
 )

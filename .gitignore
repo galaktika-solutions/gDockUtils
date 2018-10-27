@@ -1,10 +1,11 @@
 __pycache__
 *.egg-info
-dist
-.coverage
-htmlcov
-docs/build
+/dist
+/.coverage
+/htmlcov
+/docs/build
 /pyenv
 /backup
-.env
-.secret.env
+/.env
+/.secret.env
+/.files

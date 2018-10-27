@@ -1,14 +1,10 @@
-#!/usr/bin/env python3
-
-import argparse
-import sys
 import os
 import base64
 import random as rnd
 import string
 
 from . import (
-    printerr, AlreadyExists, SecretDatabaseNotFound, DoesNotExist,
+    AlreadyExists, SecretDatabaseNotFound, SecretDoesNotExist,
     uid, gid, SECRET_DATABASE_FILE
 )
 
@@ -34,75 +30,13 @@ def readpart(lst, idx, default=None):
     return ret
 
 
-def createsecret_cli():
-    parser = argparse.ArgumentParser(
-        description=(
-            'Creates a secret in the secret database (./.secret.env).'
-        ),
-    )
-    parser.add_argument(
-        '--force',
-        help='create the secret even if it already exists',
-        action='store_true'
-    )
-    group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument(
-        '-f', '--fromfile',
-        help='read the value from this file'
-    )
-    group.add_argument(
-        '-r', '--random', type=int,
-        help='create a random string of the given length'
-    )
-    group.add_argument(
-        '-v', '--value',
-        help='use the given value'
-    )
-    parser.add_argument(
-        'secret',
-        help='the name of the secret'
-    )
-    args = parser.parse_args()
-    try:
-        createsecret(
-            args.secret,
-            args.fromfile, args.random, args.value, args.force
-        )
-    except (AlreadyExists, SecretDatabaseNotFound) as e:
-        printerr(e.args[0])
-        sys.exit(1)
-
-
-def readsecret_cli():
-    parser = argparse.ArgumentParser(
-        description=(
-            'Reads the given secret from the secret database (./.secret.env).'
-        ),
-    )
-    parser.add_argument(
-        '-s', '--store',
-        help='store the secret in this file (filename:uid:gid:mode)'
-    )
-    parser.add_argument(
-        'secret',
-        help='the name of the secret'
-    )
-    args = parser.parse_args()
-    try:
-        ret = readsecret(args.secret, args.store)
-    except (DoesNotExist, SecretDatabaseNotFound) as e:
-        printerr(e.args[0])
-        sys.exit(1)
-    sys.stdout.buffer.write(ret)
-
-
 def createsecret(
         secret, fromfile=None,
         random=None, value=None, force=None,
 ):
     try:
         readsecret(secret)
-    except DoesNotExist:
+    except SecretDoesNotExist:
         pass
     else:
         if not force:
@@ -153,7 +87,7 @@ def readsecret(
             break
 
     if value is None:
-        raise DoesNotExist('Secret %s not found.' % secret)
+        raise SecretDoesNotExist('Secret %s not found.' % secret)
 
     if not store:
         return value if not decode else value.decode()
