@@ -21,7 +21,7 @@ def create(hostnames, ips):
     run([
         'openssl', 'req', '-x509', '-new', '-nodes',
         '-subj', '/commonName=%s' % ca_name,
-        '-key', 'ca.key', '-sha256', '-days', '1024', '-out', 'ca.crt'
+        '-key', 'ca.key', '-sha256', '-days', '999999', '-out', 'ca.crt'
     ], cwd='/tmp')
     # generate private key
     run(['openssl', 'genrsa', '-out', 'certificate.key', '2048'], cwd='/tmp')
@@ -40,7 +40,7 @@ def create(hostnames, ips):
     # sign the certificate with CA
     run([
         'openssl', 'x509', '-req', '-in', 'certificate.csr', '-CA', 'ca.crt',
-        '-CAkey', 'ca.key', '-out', 'certificate.crt', '-days', '1024',
+        '-CAkey', 'ca.key', '-out', 'certificate.crt', '-days', '999999',
         '-sha256', '-extensions', 'SAN', '-CAcreateserial', '-CAserial',
         'ca.srl', '-extfile', 'openssl.cnf'
     ], cwd='/tmp')
