@@ -8,7 +8,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 with io.open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = '\n' + f.read()
 
-VERSION = '0.5.0'
+VERSION = '0.5.1'
 
 setup(
     name='gdockutils',
