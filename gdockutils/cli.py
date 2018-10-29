@@ -9,7 +9,7 @@ from .db import restore as _restore
 from . import DATABASE_NAME, DATABASE_USER
 from .secret import createsecret as _createsecret
 from .secret import readsecret as _readsecret
-from . import AlreadyExists, SecretDatabaseNotFound, SecretDoesNotExist
+from . import SecretAlreadyExists, SecretDatabaseNotFound, SecretDoesNotExist
 from . import printerr
 from . prepare import prepare as _prepare
 
@@ -197,7 +197,7 @@ def createsecret():
             args.secret,
             args.fromfile, args.random, args.value, args.force
         )
-    except (AlreadyExists, SecretDatabaseNotFound) as e:
+    except (SecretAlreadyExists, SecretDatabaseNotFound) as e:
         printerr(e.args[0])
         sys.exit(1)
 

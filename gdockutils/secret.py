@@ -4,7 +4,7 @@ import random as rnd
 import string
 
 from . import (
-    AlreadyExists, SecretDatabaseNotFound, SecretDoesNotExist,
+    SecretAlreadyExists, SecretDatabaseNotFound, SecretDoesNotExist,
     uid, gid, SECRET_DATABASE_FILE
 )
 
@@ -40,7 +40,7 @@ def createsecret(
         pass
     else:
         if not force:
-            raise AlreadyExists('Secret %s already exists.' % secret)
+            raise SecretAlreadyExists('Secret %s already exists.' % secret)
 
     with open(SECRET_DATABASE_FILE, 'r') as db:
         secretlines = db.readlines()

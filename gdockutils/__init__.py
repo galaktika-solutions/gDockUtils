@@ -88,7 +88,7 @@ class SecretDatabaseNotFound(Exception):
     pass
 
 
-class AlreadyExists(Exception):
+class SecretAlreadyExists(Exception):
     pass
 
 
