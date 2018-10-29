@@ -11,7 +11,7 @@ build:
 	docker-compose build
 
 test:
-	find .files -type f -exec rm {} +
+	-find .files -type f -exec rm {} +
 	docker-compose run --rm postgres bash -c "\
 		coverage run --source gdockutils -m unittest && \
 		coverage report && \
