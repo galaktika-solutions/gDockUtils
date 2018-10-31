@@ -73,7 +73,10 @@ def ask_cli():
         print(ret)
 
 
-def ask(options=[], prompt='', default=None, multiple=False, yesno=False):
+def ask(
+    options=[], prompt='', default=None, multiple=False, yesno=False,
+    marks=[]
+):
     """
     Asks the user to select one (or more) from a list of options.
 
@@ -111,8 +114,9 @@ def ask(options=[], prompt='', default=None, multiple=False, yesno=False):
     else:
         printerr('')
     for i, o in enumerate(options):
-        d = '*' if o[0] == default else ' '
-        printerr('{:>3} {} {}'.format(i, d, o[1]))
+        d = '•' if o[0] == default else ' '
+        m = '✓' if i in marks else ' '
+        printerr('{:>3} {}{} {}'.format(i, m, d, o[1]))
     printerr('')
 
     while True:
@@ -122,7 +126,10 @@ def ask(options=[], prompt='', default=None, multiple=False, yesno=False):
             msg = 'Enter a number in range 0-{}: '
         printerr(msg.format(len(options) - 1), end='')
 
-        i = input()
+        try:
+            i = input()
+        except KeyboardInterrupt:
+            sys.exit(0)
         if not i and default:
             return default
         try:
@@ -260,9 +267,19 @@ def createsecret_ui():
         with open(SECRET_DATABASE_FILE, 'w'):
             pass
         os.chmod(SECRET_DATABASE_FILE, 0o600)
+    possible_secrets = defined_secrets()
+    marks = []
+    for i, s in enumerate(possible_secrets):
+        try:
+            readsecret(s)
+        except SecretDoesNotExist:
+            pass
+        else:
+            marks.append(i)
     secret = ask(
-        defined_secrets(),
-        prompt='Which secret would you like to create?'
+        possible_secrets,
+        prompt='Which secret would you like to create?',
+        marks=marks
     )
     try:
         readsecret(secret)
