@@ -13,7 +13,7 @@ build:
 test:
 	-find .files -type f -exec rm {} +
 	docker-compose run --rm postgres bash -c "\
-		coverage run --source gdockutils -m unittest && \
+		coverage run --branch --source gdockutils -m unittest && \
 		coverage report && \
 		coverage html \
 	"
