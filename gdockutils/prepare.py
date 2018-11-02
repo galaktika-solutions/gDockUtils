@@ -14,15 +14,16 @@ def defined_secrets():
     return sorted(doc)
 
 
-def prepare(service, wait=False):
+def prepare(service, wait=False, dev=False):
     os.makedirs(SECRET_DIR, exist_ok=True)
     with open(SECRET_CONF_FILE, 'r') as f:
         doc = yaml.load(f)
+    mode = '444' if dev and os.environ.get('ENV') == 'DEV' else '400'
     for secret, _services in doc.items():
         if _services and service in _services:
             readsecret(
                 secret,
-                store='%s:%s:%s:400' % (secret, service, service),
+                store=':'.join([secret, service, service, mode]),
                 secret_dir=SECRET_DIR
             )
     if wait:

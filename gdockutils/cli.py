@@ -237,8 +237,13 @@ def prepare():
         help='wait for the database to start', action="store_true"
     )
     parser.add_argument(
+        '-d', '--dev',
+        help='dev mode: secrets will be readable by everybody',
+        action="store_true"
+    )
+    parser.add_argument(
         'service',
         help='the service to prepare'
     )
     args = parser.parse_args()
-    _prepare(args.service, args.wait)
+    _prepare(args.service, args.wait, args.dev)
