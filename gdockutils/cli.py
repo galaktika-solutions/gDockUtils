@@ -1,5 +1,6 @@
 import argparse
 import sys
+import os
 
 from .certificates import create
 from .gprun import gprun as _gprun
@@ -237,13 +238,15 @@ def prepare():
         help='wait for the database to start', action="store_true"
     )
     parser.add_argument(
-        '-d', '--dev',
-        help='dev mode: secrets will be readable by everybody',
-        action="store_true"
+        '-u', '--user',
+        help='dev mode: secrets will be owned by the given user',
     )
     parser.add_argument(
         'service',
         help='the service to prepare'
     )
     args = parser.parse_args()
-    _prepare(args.service, args.wait, args.dev)
+    if args.user and not (os.environ.get('ENV') == 'DEV'):
+        parser.error('User can only be specified in DEV mode.')
+
+    _prepare(args.service, args.wait, args.user)
