@@ -5,7 +5,8 @@ from hashlib import md5 as _md5
 from . import get_param, uid, gid, printerr, run, cp, read_secret_from_file
 from . import (
     POSTGRESCONF_ORIG, PG_HBA_ORIG, BACKUP_DIR, DATA_FILES_DIR,
-    BACKUP_FILE_PREFIX, PGDATA, DATABASE_NAME, DATABASE_USER, DATABASE_HOST
+    BACKUP_FILE_PREFIX, PGDATA, DATABASE_NAME, DATABASE_USER, DATABASE_HOST,
+    DEBUG
 )
 from .prepare import prepare
 from .secret import readsecret
@@ -94,6 +95,7 @@ def ensure_db(db, user):
     gprun(userspec='postgres', sys_exit=False, command=[
         'pg_ctl', 'stop', '-s', '-w', '-m', 'fast'
     ])
+    set_files_perms()
 
 
 def set_backup_perms(backup_uid, backup_gid):
@@ -124,7 +126,7 @@ def set_files_perms():
 
 def wait_for_db():
     while True:
-        silent = not os.environ.get('GDOCKUTILS_DEBUG')
+        silent = not DEBUG
         env = get_db_env()
         try:
             run(['psql', '-c', 'select 1'], silent=silent, env=env)

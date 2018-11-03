@@ -6,19 +6,30 @@ import grp
 import shutil
 
 
-SECRET_CONF_FILE = 'conf/secrets.yml'
-SECRET_DIR = '/run/secrets'
-BACKUP_DIR = 'backup'
-DATA_FILES_DIR = '/data/files'
-BACKUP_FILE_PREFIX = os.environ.get('HOST_NAME', 'localhost')
-PG_HBA_ORIG = 'conf/pg_hba.conf'
-POSTGRESCONF_ORIG = 'conf/postgresql.conf'
-SECRET_DATABASE_FILE = '.secret.env'
-SECRET_SOURCE_DIR = '.files'
-PGDATA = '/data/postgres'
-DATABASE_NAME = 'django'
-DATABASE_USER = 'django'
-DATABASE_HOST = 'postgres'
+def get(env_var, default):
+    return os.environ.get(env_var, default)
+
+
+SECRET_CONF_FILE = get('GDOCKUTILS_SECRET_CONF_FILE', 'conf/secrets.yml')
+SECRET_DIR = get('GDOCKUTILS_SECRET_DIR', '/run/secrets')
+BACKUP_DIR = get('GDOCKUTILS_BACKUP_DIR', 'backup')
+DATA_FILES_DIR = get('GDOCKUTILS_DATA_FILES_DIR', '/data/files')
+BACKUP_FILE_PREFIX = get(
+    'GDOCKUTILS_BACKUP_FILE_PREFIX',
+    get('HOST_NAME', 'localhost')
+)
+PG_HBA_ORIG = get('GDOCKUTILS_PG_HBA_ORIG', 'conf/pg_hba.conf')
+POSTGRESCONF_ORIG = get('GDOCKUTILS_POSTGRESCONF_ORIG', 'conf/postgresql.conf')
+SECRET_DATABASE_FILE = get('GDOCKUTILS_SECRET_DATABASE_FILE', '.secret.env')
+SECRET_SOURCE_DIR = get('GDOCKUTILS_SECRET_SOURCE_DIR', '.files')
+PGDATA = get(
+    'GDOCKUTILS_PGDATA',
+    get('PGDATA', '/data/postgres')
+)
+DATABASE_NAME = get('GDOCKUTILS_DATABASE_NAME', 'django')
+DATABASE_USER = get('GDOCKUTILS_DATABASE_USER', 'django')
+DATABASE_HOST = get('GDOCKUTILS_DATABASE_HOST', 'postgres')
+DEBUG = get('GDOCKUTILS_DEBUG', '')
 
 
 def read_secret_from_file(secret):
