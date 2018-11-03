@@ -4,7 +4,7 @@ ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update
 
 # locales
-RUN apt-get install -y locales
+RUN apt-get install -y locales rsync
 # RUN apt-get install -y wget
 # RUN apt-get install -y libffi-dev
 # RUN apt-get install -y build-essential

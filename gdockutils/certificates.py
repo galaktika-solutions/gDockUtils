@@ -60,5 +60,5 @@ def create(hostnames, ips):
     cp(
         '/tmp/certificate.key',
         os.path.join(SECRET_SOURCE_DIR, '%s-%s.key' % (cn, timestamp)),
-        stat.st_uid, stat.st_gid, mode=0o644
+        stat.st_uid, stat.st_gid, mode=0o600
     )
