@@ -1,13 +1,11 @@
 FROM ubuntu:bionic-20181018
 
+ENV UPDATE=2018-11-03
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update
 
 # locales
 RUN apt-get install -y locales rsync
-# RUN apt-get install -y wget
-# RUN apt-get install -y libffi-dev
-# RUN apt-get install -y build-essential
 RUN localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
 ENV LANG en_US.utf8
 
