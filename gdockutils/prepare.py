@@ -24,7 +24,7 @@ def prepare(service, wait=False, user=None):
         if _services and service in _services:
             readsecret(
                 secret,
-                store=':'.join([secret, u, g, '400']),
+                store=':'.join([secret, str(u), str(g), '400']),
                 secret_dir=SECRET_DIR
             )
     if wait:
