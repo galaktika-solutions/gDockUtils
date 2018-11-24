@@ -85,6 +85,16 @@ def gid(spec):
             return gr.gr_gid
 
 
+def parseuidgid(spec):
+    spec = spec.split(':')
+    u = uid(spec[0])
+    if len(spec) == 2:
+        return u, gid(spec[1])
+    elif len(spec) == 1:
+        pw = pwd.getpwuid(u)
+        return u, pw.pw_gid
+
+
 def cp(source, dest, _uid=-1, _gid=-1, mode=None):
     shutil.copyfile(source, dest)
     os.chown(dest, uid(_uid), gid(_gid))
