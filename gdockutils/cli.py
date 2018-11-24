@@ -238,7 +238,7 @@ def prepare():
     )
     parser.add_argument(
         '-u', '--user',
-        help='secrets will be owned by the given user',
+        help='secrets will be owned by the given user:group',
     )
     parser.add_argument(
         'service',
