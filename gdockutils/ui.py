@@ -263,7 +263,7 @@ def restore_ui():
 
 
 def createsecret_ui():
-    with open(SECRET_DATABASE_FILE, 'w'):
+    with open(SECRET_DATABASE_FILE, 'a'):
         pass
     os.chmod(SECRET_DATABASE_FILE, 0o600)
     possible_secrets = defined_secrets()
