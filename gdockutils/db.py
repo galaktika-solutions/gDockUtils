@@ -8,6 +8,7 @@ from . import (
     BACKUP_FILE_PREFIX, PGDATA, DATABASE_NAME, DATABASE_USER, DATABASE_HOST,
     DEBUG
 )
+from .prepare import prepare
 from .secret import readsecret
 from .gprun import gprun
 
@@ -52,6 +53,8 @@ def ensure_db(db, user):
 
     dest = os.path.join(PGDATA, 'postgresql.conf')
     cp(POSTGRESCONF_ORIG, dest, 'postgres', 'postgres', 0o600)
+
+    prepare('postgres')
 
     dbpass = readsecret('DB_PASSWORD_POSTGRES', decode=True)
     dbpass_postgres = "'md5%s'" % md5(dbpass + 'postgres')
