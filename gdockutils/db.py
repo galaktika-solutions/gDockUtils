@@ -2,13 +2,12 @@ import os
 import time
 from hashlib import md5 as _md5
 
-from . import get_param, uid, gid, printerr, run, cp, read_secret_from_file
+from . import get_param, uid, gid, printerr, run, cp
 from . import (
     POSTGRESCONF_ORIG, PG_HBA_ORIG, BACKUP_DIR, DATA_FILES_DIR,
     BACKUP_FILE_PREFIX, PGDATA, DATABASE_NAME, DATABASE_USER, DATABASE_HOST,
     DEBUG
 )
-from .prepare import prepare
 from .secret import readsecret
 from .gprun import gprun
 
@@ -26,7 +25,7 @@ def get_db_env(d=DATABASE_NAME, u=DATABASE_USER):
     ret = DB_ENV.copy()
     ret['PGUSER'] = u
     ret['PGDATABASE'] = d
-    ret['PGPASSWORD'] = read_secret_from_file('DB_PASSWORD_%s' % u.upper())
+    ret['PGPASSWORD'] = readsecret('DB_PASSWORD_%s' % u.upper(), decode=True)
     return ret
 
 
@@ -53,8 +52,6 @@ def ensure_db(db, user):
 
     dest = os.path.join(PGDATA, 'postgresql.conf')
     cp(POSTGRESCONF_ORIG, dest, 'postgres', 'postgres', 0o600)
-
-    prepare('postgres')
 
     dbpass = readsecret('DB_PASSWORD_POSTGRES', decode=True)
     dbpass_postgres = "'md5%s'" % md5(dbpass + 'postgres')
