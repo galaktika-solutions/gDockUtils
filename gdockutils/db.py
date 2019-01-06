@@ -162,9 +162,12 @@ def backup(
         run(cmd, env=get_db_env(), log_command=True)
 
     if files:
+        source = DATA_FILES_DIR
+        if source[-1] != '/':
+            source += '/'
         cmd = [
             'rsync', '-v', '-a', '--delete', '--stats',
-            DATA_FILES_DIR, os.path.join(BACKUP_DIR, 'files/')
+            source, os.path.join(BACKUP_DIR, 'files/')
         ]
         run(cmd, log_command=True)
 
