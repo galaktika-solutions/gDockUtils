@@ -55,6 +55,11 @@ def gprun():
         help='the name of the signal to send to the process'
     )
     parser.add_argument(
+        '-n', '--newsession',
+        help='backs up files from /data/files/ to BACKUP_DIR/files',
+        action='store_true'
+    )
+    parser.add_argument(
         'command',
         nargs=argparse.REMAINDER,
         # nargs='+',
@@ -67,6 +72,7 @@ def gprun():
     _gprun(
         userspec=args.userspec,
         stopsignal=args.stopsignal,
+        start_new_session=args.newsession,
         command=args.command
     )
 

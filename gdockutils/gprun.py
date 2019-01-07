@@ -63,7 +63,10 @@ def get_userspec(spec):
     return uid, username, homedir, gid, groups
 
 
-def gprun(userspec=None, stopsignal=None, command=[], sys_exit=True):
+def gprun(
+    userspec=None, stopsignal=None, command=[],
+    sys_exit=True, start_new_session=True
+):
     """
     Runs the specified command using different user/group. On SIGTERM and
     SIGINT, sends the specified signal to the process.
@@ -111,7 +114,7 @@ def gprun(userspec=None, stopsignal=None, command=[], sys_exit=True):
 
     proc = subprocess.Popen(
         command, preexec_fn=preexec, env=env,
-        start_new_session=True
+        start_new_session=start_new_session
     )
 
     def handler(signum, frame):
