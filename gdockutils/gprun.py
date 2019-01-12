@@ -5,6 +5,8 @@ import subprocess
 import signal
 import sys
 
+from . import DEBUG, printerr
+
 
 def get_userspec(spec):
     if spec is None:
@@ -87,6 +89,10 @@ def gprun(
         gprun(userspec='postgres', command=['initdb'], sys_exit=False)
     """
     uid, username, homedir, gid, groups = get_userspec(userspec)
+    if DEBUG:
+        printerr('gprun params: {}, {}, {}'.format(
+            userspec, stopsignal, start_new_session
+        ))
 
     def preexec():
         if groups is not None:
@@ -118,6 +124,9 @@ def gprun(
     )
 
     def handler(signum, frame):
+        to_send = sig if sig is not None else signum
+        if DEBUG:
+            printerr('sending signal to process: {}'.format(to_send))
         proc.send_signal(sig if sig is not None else signum)
 
     signal.signal(signal.SIGTERM, handler)

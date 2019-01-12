@@ -9,8 +9,8 @@ networks:
 services:
   postgres:
     build:
-        context: .
-        dockerfile: docker/Dockerfile
+      context: .
+      dockerfile: docker/Dockerfile
     image: gdockutils
     env_file: .env
     command: ["postgres"]

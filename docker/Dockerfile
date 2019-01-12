@@ -1,4 +1,4 @@
-FROM ubuntu:bionic-20181018
+FROM ubuntu:bionic-20181112
 
 ENV UPDATE=2018-11-03
 ENV DEBIAN_FRONTEND noninteractive

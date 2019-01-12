@@ -1,3 +1,4 @@
 # gDockUtils
 
-The common parts of gStack variations.
+Docker helper command line utilities for a postgres-django-nginx single-host
+application.

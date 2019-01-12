@@ -17,4 +17,8 @@ if [ "$1" = 'distribute' ]; then
   exit 0
 fi
 
+if [ "$1" = 'sleep' ]; then
+  exec gprun -u "$(stat -c %u:%g .)" -s SIGINT sleep 1000
+fi
+
 exec "$@"
