@@ -1,0 +1,7 @@
+[flake8]
+max-line-length = 88
+ignore =
+    # E402: We need to call django.setup() before model imports
+    E402,
+    W503,
+    E203

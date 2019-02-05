@@ -1,29 +1,9 @@
 version: "3.7"
 
-volumes:
-  data:
-
-networks:
-  default:
-
 services:
-  postgres:
+  main:
     build:
       context: .
-      dockerfile: docker/Dockerfile
     image: gdockutils
-    env_file: .env
-    command: ["postgres"]
     volumes:
       - ".:/src"
-      - "data:/data"
-    ports:
-      - "127.0.0.1:5432:5432"
-
-  django:
-    image: gdockutils
-    depends_on: ["postgres"]
-    env_file: .env
-    volumes:
-      - ".:/src"
-      - "data:/data"

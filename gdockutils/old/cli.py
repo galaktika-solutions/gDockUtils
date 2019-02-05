@@ -1,8 +1,6 @@
 import argparse
 import sys
 
-from .certificates import create
-from .gprun import gprun as _gprun
 from .db import ensure_db as _ensure_db
 from .db import backup as _backup
 from .db import restore as _restore
@@ -12,69 +10,6 @@ from .secret import readsecret as _readsecret
 from . import SecretAlreadyExists, SecretDatabaseNotFound, SecretDoesNotExist
 from . import printerr
 from . prepare import prepare as _prepare
-
-
-def createcerts():
-    parser = argparse.ArgumentParser(
-        description=(
-            'Creates certificates for development purposes.'
-        ),
-    )
-    parser.add_argument(
-        '-n', '--hostname', action='append',
-        help='specify a host name'
-    )
-    parser.add_argument(
-        '-i', '--ip', action='append',
-        help='specify an ip address'
-    )
-    args = parser.parse_args()
-    if not args.hostname:
-        parser.error('At least one host name must be specified.')
-
-    create(args.hostname, args.ip)
-
-
-def gprun():
-    parser = argparse.ArgumentParser(
-        description=(
-            'Runs the specified command using different user/group.\n'
-            'On SIGTERM and SIGINT, sends the specified signal to the process.'
-        ),
-        usage='gprun [-h] [-u USERSPEC] [-s STOPSIGNAL] command [...]'
-    )
-    parser.add_argument(
-        '-u', '--userspec',
-        help=(
-            'user/group to switch to in the form '
-            '(uid|username)[:(gid|groupname)]'
-        )
-    )
-    parser.add_argument(
-        '-s', '--stopsignal',
-        help='the name of the signal to send to the process'
-    )
-    parser.add_argument(
-        '-n', '--newsession',
-        help='backs up files from /data/files/ to BACKUP_DIR/files',
-        action='store_true'
-    )
-    parser.add_argument(
-        'command',
-        nargs=argparse.REMAINDER,
-        # nargs='+',
-        help='the command to run'
-    )
-    args = parser.parse_args()
-    if not args.command:
-        parser.error('No command given')
-
-    _gprun(
-        userspec=args.userspec,
-        stopsignal=args.stopsignal,
-        start_new_session=args.newsession,
-        command=args.command
-    )
 
 
 def ensure_db():

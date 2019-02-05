@@ -13,66 +13,6 @@ from .secret import (
 from .prepare import defined_secrets
 
 
-def ask_cli():
-    parser = argparse.ArgumentParser(
-        description=(
-            'Asks the user to select one (or more) from a list of options.'
-        ),
-    )
-    parser.add_argument(
-        '-p', '--prompt',
-        default='Select an option:',
-        help=(
-            'print a description to the user'
-        )
-    )
-    parser.add_argument(
-        '-d', '--default',
-        help=(
-            'the default selection to use'
-        )
-    )
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument(
-        '-m', '--multiple',
-        help='multiple choice',
-        action='store_true'
-    )
-    group.add_argument(
-        '-y', '--yesno',
-        help='yes/no question',
-        action='store_true'
-    )
-    parser.add_argument(
-        'options',
-        help=(
-            'the options to choose from'
-        ),
-        nargs='*'
-    )
-    args = parser.parse_args()
-    if not args.options and not args.yesno:
-        parser.error('Options can only be empty in case of a yes/no question.')
-    if args.yesno and args.default and args.default not in ('y', 'n'):
-        parser.error(
-            'In case of a yes/no question, default must be "y" or "n"'
-        )
-
-    try:
-        ret = ask(
-            options=args.options, prompt=args.prompt,
-            default=args.default, multiple=args.multiple,
-            yesno=args.yesno
-        )
-    except NoChoiceError as e:
-        printerr(e.args[0])
-        sys.exit(1)
-    if args.multiple:
-        [print(r) for r in ret]
-    else:
-        print(ret)
-
-
 def ask(
     options=[], prompt='', default=None, multiple=False, yesno=False,
     marks=[]

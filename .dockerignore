@@ -1,7 +1,3 @@
-.git
-pyenv
-dist
-htmlcov
-/backup
-/.secret.env
+/.venv
 /.files
+/.secret.env

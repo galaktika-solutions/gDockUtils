@@ -1,12 +1,11 @@
 import unittest
-import unittest.mock
+from unittest.mock import patch
 
-from gdockutils import parseuidgid
+from gdockutils.utils import run
 
 
 class TestUtils(unittest.TestCase):
-    def test_parseuidgid(self):
-        self.assertEqual(parseuidgid('1:3'), (1, 3))
-        self.assertEqual(parseuidgid('postgres'), (999, 999))
-        self.assertEqual(parseuidgid('postgres:0'), (999, 0))
-        self.assertEqual(parseuidgid('postgres:django'), (999, 8000))
+    @patch('gdockutils.utils.subprocess.run')
+    def test_run(self, mock_run):
+        run(['ls'])
+        mock_run.assert_called()

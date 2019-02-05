@@ -5,15 +5,13 @@ import subprocess
 import signal
 import sys
 
-from . import DEBUG, printerr
-
 
 def get_userspec(spec):
     if spec is None:
         return None, None, None, None, None
-    _spec = spec.split(':')
+    _spec = spec.split(":")
     if len(_spec) > 2:
-        raise Exception('wrong userspec: %r' % spec)
+        raise Exception("wrong userspec: %r" % spec)
 
     uspec = _spec[0]
     if len(_spec) == 1:
@@ -27,7 +25,7 @@ def get_userspec(spec):
         try:
             pw = pwd.getpwnam(uspec)
         except KeyError:
-            raise Exception('user %r does not exist' % uspec)
+            raise Exception("user %r does not exist" % uspec)
         else:
             uid, username, homedir = pw.pw_uid, pw.pw_name, pw.pw_dir
     else:
@@ -57,7 +55,7 @@ def get_userspec(spec):
             try:
                 gr = grp.getgrnam(gspec)
             except KeyError:
-                raise Exception('group %r does not exist' % gspec)
+                raise Exception("group %r does not exist" % gspec)
             else:
                 gid = gr.gr_gid
         groups = [gid]
@@ -65,13 +63,10 @@ def get_userspec(spec):
     return uid, username, homedir, gid, groups
 
 
-def gprun(
-    userspec=None, stopsignal=None, command=[],
-    sys_exit=True, start_new_session=True
-):
-    """
-    Runs the specified command using different user/group. On SIGTERM and
-    SIGINT, sends the specified signal to the process.
+def surun(userspec=None, stopsignal=None, command=[], sys_exit=True):
+    """Runs the specified command using different user/group.
+
+    On SIGTERM and SIGINT, sends the specified signal to the process.
 
     :param str userspec: either a user name (``john``) or user name and
       group name separated with colon (``john:postgres``).
@@ -84,15 +79,11 @@ def gprun(
 
     Example::
 
-        from gdockutils.gprun import gprun
+        from gdockutils.surun import surun
 
-        gprun(userspec='postgres', command=['initdb'], sys_exit=False)
+        surun(userspec='postgres', command=['initdb'], sys_exit=False)
     """
     uid, username, homedir, gid, groups = get_userspec(userspec)
-    if DEBUG:
-        printerr('gprun params: {}, {}, {}'.format(
-            userspec, stopsignal, start_new_session
-        ))
 
     def preexec():
         if groups is not None:
@@ -104,29 +95,23 @@ def gprun(
 
     env = os.environ.copy()
     if username is not None:
-        env['USER'] = username
+        env["USER"] = username
     if homedir is not None:
-        env['HOME'] = homedir
+        env["HOME"] = homedir
     if uid is not None:
-        env['UID'] = str(uid)
+        env["UID"] = str(uid)
 
     if stopsignal is not None:
         try:
             sig = getattr(signal, stopsignal)
         except AttributeError:
-            raise Exception('bad signal: %r' % stopsignal)
+            raise Exception("bad signal: %r" % stopsignal)
     else:
         sig = None
 
-    proc = subprocess.Popen(
-        command, preexec_fn=preexec, env=env,
-        start_new_session=start_new_session
-    )
+    proc = subprocess.Popen(command, preexec_fn=preexec, env=env)
 
     def handler(signum, frame):
-        to_send = sig if sig is not None else signum
-        if DEBUG:
-            printerr('sending signal to process: {}'.format(to_send))
         proc.send_signal(sig if sig is not None else signum)
 
     signal.signal(signal.SIGTERM, handler)
