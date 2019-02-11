@@ -113,12 +113,14 @@ class SecretSection(SectionBase):
                             service, self.__class__.__name__, secret[0]
                         )
                     )
-                clean_secrets.append((
-                    secret[0],
-                    secret[1] if len(secret) >= 2 else service,
-                    secret[2] if len(secret) >= 2 else service,
-                    secret[3] if len(secret) >= 3 else 0o400,
-                ))
+                clean_secrets.append(
+                    (
+                        secret[0],
+                        secret[1] if len(secret) >= 2 else service,
+                        secret[2] if len(secret) >= 2 else service,
+                        secret[3] if len(secret) >= 3 else 0o400,
+                    )
+                )
             if clean_secrets:
                 services[service] = clean_secrets
         self.services = services

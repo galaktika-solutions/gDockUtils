@@ -13,11 +13,13 @@ class NotSet:
     Indicates that a default value does not exist, which means the config is
     required.
     """
+
     pass
 
 
 class ConfigFieldMeta(type):
     """Metaclass to keep track of field ordering."""
+
     def __init__(self, name, bases, dict):
         self._configfield_counter = _configfield_counter.i
         _configfield_counter.i += 1

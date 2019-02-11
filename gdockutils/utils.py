@@ -11,12 +11,14 @@ from .exceptions import ImproperlyConfigured, RootModeNeeded
 
 def run(cmd, silent=False, log_command=False, cwd=None, env=None):
     if log_command:
-        click.echo(' '.join(cmd), err=True)
+        click.echo(" ".join(cmd), err=True)
     subprocess.run(
-        cmd, check=True,
+        cmd,
+        check=True,
         stdout=subprocess.PIPE if silent else None,
         stderr=subprocess.PIPE if silent else None,
-        cwd=cwd, env=env
+        cwd=cwd,
+        env=env,
     )
 
 
@@ -27,7 +29,7 @@ def uid(spec):
         try:
             pw = pwd.getpwnam(spec)
         except KeyError:
-            raise Exception('User %r does not exist' % spec)
+            raise Exception("User %r does not exist" % spec)
         else:
             return pw.pw_uid
 
@@ -39,7 +41,7 @@ def gid(spec):
         try:
             gr = grp.getgrnam(spec)
         except KeyError:
-            raise Exception('Group %r does not exist' % spec)
+            raise Exception("Group %r does not exist" % spec)
         else:
             return gr.gr_gid
 
@@ -47,7 +49,7 @@ def gid(spec):
 def path_check(path, uid, gid, mask, root_mode=False, create_file=False):
     if create_file and not os.path.isfile(path):
         if root_mode:
-            open(path, 'w').close()
+            open(path, "w").close()
         else:
             raise ImproperlyConfigured("No such file: {}".format(path))
 
@@ -72,4 +74,5 @@ def root_mode_needed(fnc):
         if not self.root_mode:
             raise RootModeNeeded(fnc)
         return fnc(self, *args, **kwargs)
+
     return check_root

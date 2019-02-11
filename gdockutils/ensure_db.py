@@ -2,10 +2,11 @@ import os
 
 from .utils import uid, gid  # cp
 from .surun import surun
+
 # from .prepare import prepare
 
 
-def ensure_db(pgdata='/data/postgres'):
+def ensure_db(pgdata="/data/postgres"):
     """Initializes the database, sets up users and passwords.
 
     The database must not be running, it will be started locally.

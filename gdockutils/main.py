@@ -1,6 +1,7 @@
 import click
 
 from .createcerts import createcerts as _createcerts
+
 # from .surun import surun as _surun
 # from .ensure_db import ensure_db as _ensure_db
 
@@ -46,14 +47,16 @@ def createcerts(name, ip, outputdir):
 def list():
     import sys
     from .conf import Config
-    sys.path += ['tests/fixtures']
+
+    sys.path += ["tests/fixtures"]
     config = Config(
-        config_module='conf1',
-        env_file='tests/conf/.env',
-        secret_file='tests/conf/.secret.env',
+        config_module="conf1",
+        env_file="tests/conf/.env",
+        secret_file="tests/conf/.secret.env",
         root_mode=True,
     )
     config.list()
+
 
 # @cli.command()
 # @click.option(
