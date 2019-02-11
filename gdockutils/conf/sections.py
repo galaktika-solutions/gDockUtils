@@ -3,7 +3,8 @@ import os
 import base64
 import threading
 
-from ..exceptions import ConfigAlreadyExists, ConfigMissing
+from ..exceptions import ConfigAlreadyExists, ConfigMissing, ImproperlyConfigured
+from .configfields import ConfigField
 
 
 ENV_REGEX = re.compile(r"^\s*([^#].*?)=(.*)$")
@@ -13,18 +14,22 @@ _section_counter.i = 0
 
 class SectionMeta(type):
     """Metaclass to keep track of config ordering."""
+
     def __init__(self, name, bases, dict):
-        if bases and 'SectionBase' not in [b.__name__ for b in bases]:
+        if bases and "SectionBase" not in [b.__name__ for b in bases]:
             self._section_counter = _section_counter.i
             _section_counter.i += 1
 
 
 class SectionBase(metaclass=SectionMeta):
-    name = ''
-    indicator = ('?', '?')
+    name = ""
+    indicator = ("?", "?")
+
+    def _check_config(self):
+        pass
 
     def get_name(self):
-        return self.name if self.name else 'Section {}'.format(self._section_counter)
+        return self.name if self.name else "Section {}".format(self._section_counter)
 
     def to_python(self, name, value):
         return getattr(self, name).to_python(value)
@@ -91,7 +96,32 @@ class SectionBase(metaclass=SectionMeta):
 
 class SecretSection(SectionBase):
     services = {}
-    indicator = ('S', 'S')
+    indicator = ("S", "S")
+
+    def _check_config(self):
+        services = {}  # keep a cleaned version on the instance
+        for service, secrets in self.services.items():
+            clean_secrets = []
+            for secret in secrets:
+                if isinstance(secret, str):
+                    secret = [secret]
+                if not hasattr(self, secret[0]) or not isinstance(
+                    getattr(self, secret[0]), ConfigField
+                ):
+                    raise ImproperlyConfigured(
+                        "Invalid name for service {} in section {}: {}".format(
+                            service, self.__class__.__name__, secret[0]
+                        )
+                    )
+                clean_secrets.append((
+                    secret[0],
+                    secret[1] if len(secret) >= 2 else service,
+                    secret[2] if len(secret) >= 2 else service,
+                    secret[3] if len(secret) >= 3 else 0o400,
+                ))
+            if clean_secrets:
+                services[service] = clean_secrets
+        self.services = services
 
     def decode(self, value):
         return base64.b64decode(value.strip())
@@ -108,15 +138,16 @@ class SecretSection(SectionBase):
         fn = os.path.join(config.secret_dir, name)
         try:
             with open(fn, "rb") as f:
-                return getattr(self, name).to_python(name, f.read())
+                content = f.read()
         except FileNotFoundError:
-            raise ConfigMissing("The secret {} was not found.".format(name))
+            content = None
         except PermissionError:
             raise ConfigMissing("Accessing the secret {} is forbidden.".format(name))
+        return getattr(self, name).to_python(content)
 
 
 class EnvSection(SectionBase):
-    indicator = ('E', 'E')
+    indicator = ("E", "E")
 
     def get_file(self, config):
         return config.env_file

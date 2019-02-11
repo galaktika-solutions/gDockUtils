@@ -7,7 +7,7 @@ import click
 from ..exceptions import ConfigMissing, ImproperlyConfigured
 from .sections import SecretSection
 from .configfields import ConfigField
-from ..utils import path_check, root_mode_needed
+from ..utils import path_check, root_mode_needed, uid, gid
 
 
 def fb(var, envvar, default):
@@ -21,12 +21,12 @@ class Config:
         env_file=None,
         secret_file=None,
         secret_dir=None,
-        root_mode=False,
+        root_mode=None,
     ):
         stat = os.stat(".")
         self.pu, self.pg = stat.st_uid, stat.st_gid
         self.is_dev = os.path.isdir(".git")
-        self.root_mode = root_mode
+        self.root_mode = (os.getuid() == 0) if root_mode is None else root_mode
 
         if not self.is_dev and self.pu != 0:
             msg = "In production the project directory must be owned by root."
@@ -42,6 +42,7 @@ class Config:
         mod = importlib.import_module(self.config_module)
         self.configmap = {}  # map a config name to the section where it's defined
         self.sections = {}
+        self.section_instances = []
         sections = inspect.getmembers(mod, inspect.isclass)
         sections = filter(lambda x: hasattr(x[1], "_section_counter"), sections)
         sections = sorted(sections, key=lambda x: x[1]._section_counter)
@@ -62,6 +63,9 @@ class Config:
                 msg = "Config field {} is defined in {} and {}"
                 othername = self.configmap[name].__class__.__name__
                 raise ImproperlyConfigured(msg.format(name, othername, classname))
+
+            instance._check_config()
+            self.section_instances.append(instance)
 
     def _ensure_files(self):
         # env file
@@ -138,6 +142,22 @@ class Config:
                 s += click.style(" {0:<{1}} ".format(field, mx), bold=True)
                 s += "{} {} {}\n".format(ind, sign, v)
         click.echo(s, color=color, file=file)
+
+    @root_mode_needed
+    def provide_secrets(self, service):
+        for secret_section in self.section_instances:
+            if not isinstance(secret_section, SecretSection):
+                continue
+            for name, user, group, mode in secret_section.services.get(service, []):
+                value = self[name]
+                value = getattr(secret_section, name).to_repr(value)
+                if isinstance(value, str):
+                    value = value.encode()
+                fn = os.path.join(self.secret_dir, name)
+                with open(fn, "wb") as f:
+                    f.write(value)
+                os.chown(fn, uid(user), gid(group))
+                os.chmod(fn, mode)
 
     def __getitem__(self, name):
         return self._getroot(name) if self.root_mode else self._get(name)

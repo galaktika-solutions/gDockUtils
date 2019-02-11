@@ -10,6 +10,9 @@ class Env(EnvSection):
 
 class Other(SecretSection):
     name = "Other Section"
+    services = {
+        "postgres": ("X", ("Y", "root", "root", 0o444),)
+    }
 
     X = Int(max_value=100)
     Y = String(default='foo', max_length=10)

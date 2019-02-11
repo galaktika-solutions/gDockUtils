@@ -5,7 +5,7 @@ import os
 from unittest.mock import patch
 
 from gdockutils.conf import Config
-from gdockutils.exceptions import ImproperlyConfigured, RootModeNeeded
+from gdockutils.exceptions import ImproperlyConfigured, RootModeNeeded, ConfigMissing
 
 
 sys.path += ["/src/tests/fixtures"]
@@ -25,7 +25,7 @@ class TestConf(unittest.TestCase):
         env_file="/src/tests/conf/.env",
         secret_file="/src/tests/conf/.secret.env",
         secret_dir=None,
-        root_mode=True,
+        root_mode=None,
     ):
         return Config(
             config_module=module,
@@ -96,3 +96,30 @@ class TestConf(unittest.TestCase):
             conf["A"]
         with self.assertRaises(ValueError):
             conf.set("A", "x")
+
+    def test_provide_secrets(self):
+        conf = self.config()
+        conf.set("X", 42)
+        conf.set("Y", "baz")
+        conf.provide_secrets("postgres")
+
+        s = os.stat(os.path.join(conf.secret_dir, 'X'))
+        self.assertEqual(s.st_uid, 999)
+        self.assertEqual(s.st_gid, 999)
+        self.assertEqual(s.st_mode & 0o777, 0o400)
+
+        s = os.stat(os.path.join(conf.secret_dir, 'Y'))
+        self.assertEqual(s.st_uid, 0)
+        self.assertEqual(s.st_gid, 0)
+        self.assertEqual(s.st_mode & 0o777, 0o444)
+
+        conf = self.config(root_mode=False)
+        self.assertEqual(conf["X"], 42)
+        self.assertEqual(conf["Y"], "baz")
+
+    def test_get_secret_if_missing(self):
+        self.config()
+        conf = self.config(root_mode=False)
+        with self.assertRaises(ConfigMissing):
+            conf["X"]
+        self.assertEqual(conf["Y"], "foo")
