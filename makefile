@@ -1,5 +1,5 @@
 SHELL=/bin/bash
-version := $(shell sed -rn "s/^VERSION = '(.*)'$$/\1/p" setup.py)
+version := $(shell sed -rn "s/^VERSION = \"(.*)\"$$/\1/p" setup.py)
 
 init:
 	docker-compose run --rm -u "$$(id -u):$$(id -g)" main bash -c " \
@@ -24,7 +24,8 @@ test:
 
 .PHONY: docs
 docs:
-	docker-compose run --rm -u "$$(id -u):$$(id -g)" main sphinx-build -b html docs/source docs/build
+	docker-compose run --rm -e "VERSION=$(version)" -u "$$(id -u):$$(id -g)" \
+		main sphinx-build -b html docs/source docs/build
 
 distribute: build test docs
 	docker-compose run --rm main bash -c " \
