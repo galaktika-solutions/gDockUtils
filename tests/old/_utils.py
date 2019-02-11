@@ -12,8 +12,8 @@ class RecordingPopen(subprocess.Popen):
         cls.tempfile_pairs = []
 
     def __init__(self, *args, **kwargs):
-        stdout = tempfile.TemporaryFile(mode='w+', encoding='utf-8')
-        stderr = tempfile.TemporaryFile(mode='w+', encoding='utf-8')
+        stdout = tempfile.TemporaryFile(mode="w+", encoding="utf-8")
+        stderr = tempfile.TemporaryFile(mode="w+", encoding="utf-8")
         self.tempfile_pairs.append((stdout, stderr))
-        kwargs['stdout'], kwargs['stderr'] = stdout, stderr
+        kwargs["stdout"], kwargs["stderr"] = stdout, stderr
         super().__init__(*args, **kwargs)

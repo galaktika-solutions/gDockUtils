@@ -11,4 +11,4 @@ class Other(SecretSection):
     name = "Other Section"
 
     X = Int(max_value=200)
-    Y = String(default='foo')
+    Y = String(default="foo")

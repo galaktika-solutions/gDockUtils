@@ -5,7 +5,7 @@ from gdockutils.utils import run
 
 
 class TestUtils(unittest.TestCase):
-    @patch('gdockutils.utils.subprocess.run')
+    @patch("gdockutils.utils.subprocess.run")
     def test_run(self, mock_run):
-        run(['ls'])
+        run(["ls"])
         mock_run.assert_called()

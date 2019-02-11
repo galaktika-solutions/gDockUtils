@@ -90,7 +90,7 @@ class TestConf(unittest.TestCase):
         self.assertEqual(conf["A"], True)
         conf.set("A", False)
         self.assertEqual(conf["A"], False)
-        with open(conf.env_file, 'w') as f:
+        with open(conf.env_file, "w") as f:
             f.write("A=xxx")
         with self.assertRaises(ValueError):
             conf["A"]
@@ -103,12 +103,12 @@ class TestConf(unittest.TestCase):
         conf.set("Y", "baz")
         conf.provide_secrets("postgres")
 
-        s = os.stat(os.path.join(conf.secret_dir, 'X'))
+        s = os.stat(os.path.join(conf.secret_dir, "X"))
         self.assertEqual(s.st_uid, 999)
         self.assertEqual(s.st_gid, 999)
         self.assertEqual(s.st_mode & 0o777, 0o400)
 
-        s = os.stat(os.path.join(conf.secret_dir, 'Y'))
+        s = os.stat(os.path.join(conf.secret_dir, "Y"))
         self.assertEqual(s.st_uid, 0)
         self.assertEqual(s.st_gid, 0)
         self.assertEqual(s.st_mode & 0o777, 0o444)
