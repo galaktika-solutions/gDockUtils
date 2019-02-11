@@ -7,3 +7,4 @@ services:
     image: gdockutils
     volumes:
       - ".:/src"
+      - ".:/host"

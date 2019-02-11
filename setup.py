@@ -26,7 +26,7 @@ setup(
     license='MIT',
     packages=['gdockutils'],
     install_requires=[
-        'pyyaml >= 3.13',
+        # 'pyyaml >= 3.13',
         'click >= 7.0',
     ],
     entry_points={

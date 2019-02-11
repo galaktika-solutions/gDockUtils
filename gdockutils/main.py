@@ -42,6 +42,19 @@ def createcerts(name, ip, outputdir):
     _createcerts(name, ip, outputdir)
 
 
+@cli.command()
+def list():
+    import sys
+    from .conf import Config
+    sys.path += ['tests/fixtures']
+    config = Config(
+        config_module='conf1',
+        env_file='tests/conf/.env',
+        secret_file='tests/conf/.secret.env',
+        root_mode=True,
+    )
+    config.list()
+
 # @cli.command()
 # @click.option(
 #     "-u",

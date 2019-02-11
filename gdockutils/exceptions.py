@@ -10,3 +10,7 @@ class ConfigAlreadyExists(Exception):
 class ConfigMissing(Exception):
     """Raised when a required config value is missing."""
     pass
+
+
+class RootModeNeeded(Exception):
+    pass

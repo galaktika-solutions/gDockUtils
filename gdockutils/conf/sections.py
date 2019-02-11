@@ -1,25 +1,33 @@
 import re
 import os
 import base64
+import threading
 
-from .exceptions import ConfigAlreadyExists, ConfigMissing
+from ..exceptions import ConfigAlreadyExists, ConfigMissing
 
 
 ENV_REGEX = re.compile(r"^\s*([^#].*?)=(.*)$")
+_section_counter = threading.local()
+_section_counter.i = 0
 
 
-class ConfigMeta(type):
-    """Metaclass the keep track of config ordering."""
-    creation_counter = 0
-
+class SectionMeta(type):
+    """Metaclass to keep track of config ordering."""
     def __init__(self, name, bases, dict):
-        self._gdockutils_order = ConfigMeta.creation_counter
-        ConfigMeta.creation_counter += 1
+        if bases and 'SectionBase' not in [b.__name__ for b in bases]:
+            self._section_counter = _section_counter.i
+            _section_counter.i += 1
 
 
-class ConfigItem(metaclass=ConfigMeta):
-    names = {}
-    section = 'Main'
+class SectionBase(metaclass=SectionMeta):
+    name = ''
+    indicator = ('?', '?')
+
+    def get_name(self):
+        return self.name if self.name else 'Section {}'.format(self._section_counter)
+
+    def to_python(self, name, value):
+        return getattr(self, name).to_python(value)
 
     def readenv(self, name, file):
         with open(file, "r") as f:
@@ -37,7 +45,7 @@ class ConfigItem(metaclass=ConfigMeta):
             ret = self.decode(ret)
             default_used = False
 
-        ret = self.names[name].to_python(name, ret)
+        ret = getattr(self, name).to_python(ret)
         return (default_used, ret) if indicate_default else ret
 
     def decode(self, value):
@@ -73,7 +81,7 @@ class ConfigItem(metaclass=ConfigMeta):
             f.writelines(newlines)
 
     def setroot(self, name, value, config, safe=False):
-        value = self.names[name].to_repr(name, value)
+        value = getattr(self, name).to_repr(value)
         value = self.encode(value)
         self._set_delete(name, value, config, safe=safe)
 
@@ -81,9 +89,9 @@ class ConfigItem(metaclass=ConfigMeta):
         self._set_delete(name, None, config, safe=None, set=False)
 
 
-class Secret(ConfigItem):
+class SecretSection(SectionBase):
     services = {}
-    indicator = ('🔐', 'S')
+    indicator = ('S', 'S')
 
     def decode(self, value):
         return base64.b64decode(value.strip())
@@ -100,18 +108,21 @@ class Secret(ConfigItem):
         fn = os.path.join(config.secret_dir, name)
         try:
             with open(fn, "rb") as f:
-                return self.names[name].to_python(name, f.read())
+                return getattr(self, name).to_python(name, f.read())
         except FileNotFoundError:
-            raise ConfigMissing("The secret {} not found.".format(name))
+            raise ConfigMissing("The secret {} was not found.".format(name))
         except PermissionError:
             raise ConfigMissing("Accessing the secret {} is forbidden.".format(name))
 
 
-class Env(ConfigItem):
-    indicator = ('🔓', 'E')
+class EnvSection(SectionBase):
+    indicator = ('E', 'E')
 
     def get_file(self, config):
         return config.env_file
 
     def get(self, name, config):
-        return self.names[name].to_python(name, os.environ.get(name))
+        try:
+            return getattr(self, name).to_python(os.environ.get(name))
+        except KeyError:
+            raise ConfigMissing("The variable {} is not set.".format(name))
