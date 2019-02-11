@@ -3,7 +3,7 @@ version: "3.7"
 services:
   main:
     build:
-      context: .
+      context: docker
     image: gdockutils
     volumes:
       - ".:/src"

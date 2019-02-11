@@ -1,6 +1,7 @@
 import click
 
-from .createcerts import createcerts as _createcerts
+# from .createcerts import createcerts as _createcerts
+from .conf.cli import conf
 
 # from .surun import surun as _surun
 # from .ensure_db import ensure_db as _ensure_db
@@ -11,51 +12,39 @@ def cli():
     pass
 
 
-@cli.command()
-@click.option(
-    "-n",
-    "--name",
-    multiple=True,
-    required=True,
-    envvar="HOST_NAME",
-    help="A name the certificate is valid for",
-)
-@click.option(
-    "-i",
-    "--ip",
-    multiple=True,
-    envvar="SERVER_IP",
-    default=("127.0.0.1",),
-    type=str,
-    help="An IP address the certificate is valid for",
-)
-@click.option(
-    "-o",
-    "--outputdir",
-    envvar="GSTACK_INPUTOUTPUTDIR",
-    default="/project/.files",
-    type=click.Path(exists=True, file_okay=False),
-    help="The directory where the certificates will be created",
-)
-def createcerts(name, ip, outputdir):
-    """Creates certificates for development purposes."""
+# @cli.command()
+# @click.option(
+#     "-n",
+#     "--name",
+#     multiple=True,
+#     required=True,
+#     envvar="HOST_NAME",
+#     help="A name the certificate is valid for",
+# )
+# @click.option(
+#     "-i",
+#     "--ip",
+#     multiple=True,
+#     envvar="SERVER_IP",
+#     default=("127.0.0.1",),
+#     type=str,
+#     help="An IP address the certificate is valid for",
+# )
+# @click.option(
+#     "-o",
+#     "--outputdir",
+#     envvar="GSTACK_INPUTOUTPUTDIR",
+#     default="/project/.files",
+#     type=click.Path(exists=True, file_okay=False),
+#     help="The directory where the certificates will be created",
+# )
+# def createcerts(name, ip, outputdir):
+#     """Creates certificates for development purposes."""
+#
+#     _createcerts(name, ip, outputdir)
 
-    _createcerts(name, ip, outputdir)
 
-
-@cli.command()
-def list():
-    import sys
-    from .conf import Config
-
-    sys.path += ["tests/fixtures"]
-    config = Config(
-        config_module="conf1",
-        env_file="tests/conf/.env",
-        secret_file="tests/conf/.secret.env",
-        root_mode=True,
-    )
-    config.list()
+cli.add_command(conf)
 
 
 # @cli.command()

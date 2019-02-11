@@ -18,6 +18,7 @@ ENV PGDATA /data/postgres
 
 # python
 ENV PYTHONUNBUFFERED 1
+ENV PYTHONPATH conf
 RUN apt-get update && apt-get install -y python3.6 python3-pip python3-venv
 
 ENV PATH $PATH:/usr/lib/postgresql/$PG_MAJOR/bin:/src/.venv/bin

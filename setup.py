@@ -8,7 +8,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 with io.open(os.path.join(here, "README.md"), encoding="utf-8") as f:
     long_description = "\n" + f.read()
 
-VERSION = "0.5.16"
+VERSION = "1.0.dev1"
 
 setup(
     name="gdockutils",
@@ -23,6 +23,7 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3",
         "Intended Audience :: Developers",
+        "Development Status :: 1 - Planning",
     ],
     license="MIT",
     packages=["gdockutils"],

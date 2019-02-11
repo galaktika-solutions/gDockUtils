@@ -3,6 +3,7 @@ __pycache__
 /dist
 /docs/build
 /.secret.env
+/.env
 /coverage_report
 /.venv
 /.coverage

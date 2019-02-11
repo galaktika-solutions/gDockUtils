@@ -8,6 +8,9 @@ init:
 		pip install -e .[dev] \
 		"
 
+build:
+	docker-compose build
+
 version:
 	@echo $(version)
 
@@ -23,7 +26,13 @@ test:
 docs:
 	docker-compose run --rm -u "$$(id -u):$$(id -g)" main sphinx-build -b html docs/source docs/build
 
-# distribute: build test docs
-# 	docker-compose run --rm postgres distribute
-# 	git tag $(version)
-# 	git push --tags
+distribute: build test docs
+	docker-compose run --rm main bash -c " \
+		rm -rf dist \
+	  python setup.py sdist \
+	  TWINE_USERNAME="$$(gstack conf get PYPI_USERNAME)" \
+	  TWINE_PASSWORD="$$(gstack conf get PYPI_PASSWORD)" \
+	  twine upload dist/* \
+	"
+	git tag $(version)
+	git push --tags
