@@ -26,9 +26,17 @@ setup(
     license='MIT',
     packages=['gdockutils'],
     install_requires=[
-        # 'pyyaml >= 3.13',
         'click >= 7.0',
     ],
+    extras_require={
+        "dev": [
+            "coverage >= 4.5.2",
+            "sphinx >= 1.8.4",
+            "sphinx_rtd_theme >= 0.4.2",
+            "twine >= 1.12.1",
+            "wheel >= 0.32.3",
+        ],
+    },
     entry_points={
         'console_scripts': [
             'gstack=gdockutils.main:cli',

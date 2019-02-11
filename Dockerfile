@@ -19,10 +19,6 @@ ENV PGDATA /data/postgres
 # python
 ENV PYTHONUNBUFFERED 1
 RUN apt-get update && apt-get install -y python3.6 python3-pip python3-venv
-RUN pip3 install pipenv
-ENV PIPENV_VENV_IN_PROJECT 1
-# Should be ENV PIPENV_CACHE_DIR /tmp/.cache
-ENV XDG_CACHE_HOME /tmp/.cache
 
 ENV PATH $PATH:/usr/lib/postgresql/$PG_MAJOR/bin:/src/.venv/bin
 WORKDIR /src
