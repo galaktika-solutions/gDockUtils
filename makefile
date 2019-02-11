@@ -38,5 +38,5 @@ distribute: build test docs
 		TWINE_PASSWORD="$$(gstack conf get PYPI_PASSWORD)" \
 			twine upload dist/* \
 	'
-	# git tag $(version)
-	# git push --tags
+	git tag $(version)
+	git push --tags
