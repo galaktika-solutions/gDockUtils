@@ -14,7 +14,7 @@ sys.path += ["/src/tests/fixtures"]
 class TestConf(unittest.TestCase):
     def setUp(self):
         """Deletes the conf directory."""
-        files = glob.glob("/src/tests/conf/.*")
+        files = glob.glob("/tmp/.*")
         for f in files:
             os.remove(f)
         os.chdir("/src")
@@ -22,8 +22,8 @@ class TestConf(unittest.TestCase):
     def config(
         self,
         module="conf1",
-        env_file="/src/tests/conf/.env",
-        secret_file="/src/tests/conf/.secret.env",
+        env_file="/tmp/.env",
+        secret_file="/tmp/.secret.env",
         secret_dir=None,
         root_mode=None,
     ):
